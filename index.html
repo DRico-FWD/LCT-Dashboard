@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="google" content="notranslate">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Life Clinical Trials — Quality Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--b:#1B3A6B;--m:#2B5BA8;--l:#E8EFF9;--a:#4A90D9;--ok:#1D9E75;--ng:#E24B4A;--w:#BA7517;--bd:#D1DCF0;--bg:#F4F7FC;--tx:#1A2540;--mu:#6B7280;--gr:rgba(0,0,0,0.06)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--tx)}
+header{background:var(--b);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.logo img{height:38px;filter:brightness(0) invert(1)}
+.hr{display:flex;align-items:center;gap:16px}
+.lu{color:rgba(255,255,255,0.6);font-size:12px}
+.rb{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:white;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer}
+.rb:hover{background:rgba(255,255,255,0.22)}
+.lay{display:flex;flex:1;min-height:calc(100vh - 60px)}
+nav{width:220px;background:white;border-right:1px solid var(--bd);padding:16px 0;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;flex-shrink:0}
+.nl{font-size:10px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.08em;padding:10px 16px 4px}
+.ni{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:var(--mu);cursor:pointer;border-left:3px solid transparent;transition:all .15s}
+.ni:hover{background:var(--l);color:var(--b)}
+.ni.active{background:var(--l);color:var(--b);border-left-color:var(--m);font-weight:500}
+.cnt{flex:1;padding:24px;overflow-y:auto}
+.pg{display:none}.pg.active{display:block}
+.pt{font-size:20px;font-weight:600;margin-bottom:2px}
+.ps{font-size:13px;color:var(--mu);margin-bottom:18px}
+.fb{background:white;border:1px solid var(--bd);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.fl{font-size:12px;color:var(--mu);font-weight:500}
+select{border:1px solid var(--bd);border-radius:6px;padding:5px 10px;font-size:13px;color:var(--tx);background:white;cursor:pointer;min-width:110px}
+.kg{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px}
+.kc{background:white;border:1px solid var(--bd);border-radius:10px;padding:14px 16px;position:relative;overflow:hidden}
+.kc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kc.good::before{background:var(--ok)}.kc.bad::before{background:var(--ng)}.kc.neutral::before{background:var(--a)}
+.kl{font-size:11px;color:var(--mu);font-weight:500;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.kv{font-size:26px;font-weight:600;line-height:1}
+.kg2{font-size:11px;color:var(--mu);margin-top:4px}
+.ks{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;margin-top:6px;font-weight:500}
+.ks.on{background:#E1F5EE;color:#0F6E56}.ks.off{background:#FCEBEB;color:#A32D2D}
+.cc{background:white;border:1px solid var(--bd);border-radius:10px;padding:16px 20px;margin-bottom:16px}
+.ct{font-size:14px;font-weight:600;margin-bottom:2px}
+.cs{font-size:12px;color:var(--mu);margin-bottom:14px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.sp{width:24px;height:24px;border:3px solid var(--bd);border-top-color:var(--m);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+.err{background:#FCEBEB;border:1px solid #F09595;border-radius:10px;padding:16px;color:#A32D2D;font-size:13px}
+.tb{width:100%;border-collapse:collapse;font-size:13px}
+.tb th{background:var(--bg);color:var(--mu);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;padding:8px 12px;text-align:left;border-bottom:1px solid var(--bd)}
+.tb td{padding:10px 12px;border-bottom:1px solid #F0F4F8}
+.tb tr:hover td{background:var(--l)}
+.bg2{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.bgg{background:#E1F5EE;color:#0F6E56}.bgr{background:#FCEBEB;color:#A32D2D}
+@media(max-width:800px){.two{grid-template-columns:1fr}nav{width:180px}}
+</style>
+</head>
+<body translate="no">
+<div id="app">
+<header>
+  <div class="logo"><img id="lgo" src="" alt="Life Clinical Trials"></div>
+  <div class="hr">
+    <span class="lu" id="lu">Loading...</span>
+    <button class="rb" onclick="load()">&#8635; Refresh</button>
+  </div>
+</header>
+<div class="lay">
+<nav>
+  <div class="nl">Overview</div>
+  <div class="ni active" onclick="sp('summary')" id="nav-summary">&#9776; QI Summary</div>
+  <div class="nl">Patient Operations</div>
+  <div class="ni" onclick="sp('visits')" id="nav-visits">&#128100; Patient Visits</div>
+  <div class="ni" onclick="sp('crf')" id="nav-crf">&#128196; CRF Data Entry</div>
+  <div class="ni" onclick="sp('queries')" id="nav-queries">&#10067; Open Queries</div>
+  <div class="nl">Monitoring</div>
+  <div class="ni" onclick="sp('mvs')" id="nav-mvs">&#128065; Monitoring Visits</div>
+  <div class="ni" onclick="sp('actions')" id="nav-actions">&#9989; Action Items</div>
+  <div class="ni" onclick="sp('pds')" id="nav-pds">&#9888; Protocol Deviations</div>
+  <div class="nl">Recruitment</div>
+  <div class="ni" onclick="sp('recruitment')" id="nav-recruitment">&#128104; Recruitment</div>
+  <div class="ni" onclick="sp('progress')" id="nav-progress">&#128200; Progress</div>
+  <div class="nl">Performance</div>
+  <div class="ni" onclick="sp('veeva')" id="nav-veeva">&#128336; Veeva TAT</div>
+  <div class="ni" onclick="sp('crc')" id="nav-crc">&#11088; CRC Performance</div>
+  <div class="ni" onclick="sp('consolidate')" id="nav-consolidate">&#128202; QIs - Consolidate</div>
+</nav>
+<div class="cnt">
+
+<div id="page-summary" class="pg active">
+  <div class="pt">Quality Indicators Summary</div>
+  <div class="ps" id="ssub">Life Clinical Trials</div>
+  <div class="fb"><span class="fl">Period:</span>
+    <select id="sY" onchange="rSum()"></select>
+    <select id="sM" onchange="rSum()"><option value="all">All months</option></select>
+  </div>
+  <div id="sKPIs" class="kg"><div style="padding:40px;text-align:center"><div class="sp"></div><p style="margin-top:12px;font-size:13px;color:#6B7280">Connecting to Google Sheets...</p></div></div>
+  <div class="cc"><div class="ct">Year-to-date trend</div><div class="cs">Monthly performance vs goal</div><div style="position:relative;width:100%;height:260px"><canvas id="tC"></canvas></div></div>
+  <div class="cc"><div class="ct">All indicators — selected month</div><div id="iTbl"></div></div>
+</div>
+
+<div id="page-visits" class="pg">
+  <div class="pt">Patient Visits</div><div class="ps">Visits by month, CRC, and therapeutic area</div>
+  <div class="fb"><span class="fl">Filter:</span>
+    <select id="vY" onchange="rVis()"><option value="all">All years</option></select>
+    <select id="vM" onchange="rVis()"><option value="all">All months</option></select>
+    <select id="vC" onchange="rVis()"><option value="all">All CRCs</option></select>
+    <select id="vA" onchange="rVis()"><option value="all">All areas</option></select>
+  </div>
+  <div id="vKPIs" class="kg"></div>
+  <div class="two">
+    <div class="cc"><div class="ct">Visits per month</div><div style="position:relative;width:100%;height:240px"><canvas id="vMC"></canvas></div></div>
+    <div class="cc"><div class="ct">% by therapeutic area</div><div style="position:relative;width:100%;height:240px"><canvas id="vAC"></canvas></div></div>
+  </div>
+  <div class="cc"><div class="ct">Visits per CRC</div><div style="position:relative;width:100%;height:260px"><canvas id="vCC"></canvas></div></div>
+</div>
+
+<div id="page-crf" class="pg">
+  <div class="pt">CRF Data Entry</div><div class="ps">Average days to entry — goal: &le;5 days</div>
+  <div class="fb"><span class="fl">Filter:</span>
+    <select id="cY" onchange="rCRF()"><option value="all">All years</option></select>
+    <select id="cM" onchange="rCRF()"><option value="all">All months</option></select>
+    <select id="cC" onchange="rCRF()"><option value="all">All CRCs</option></select>
+  </div>
+  <div id="cKPIs" class="kg"></div>
+  <div class="cc"><div class="ct">Avg days to entry by trial</div><div class="cs">Green = on track (&le;5 days) &middot; Red = off track</div><div id="crfW" style="position:relative;width:100%;height:320px"><canvas id="crfC"></canvas></div></div>
+</div>
+
+<div id="page-queries" class="pg">
+  <div class="pt">CRF Open Queries</div><div class="ps">Average days to resolution — goal: &le;5 days</div>
+  <div class="fb"><span class="fl">Filter:</span>
+    <select id="qY" onchange="rQ()"><option value="all">All years</option></select>
+    <select id="qM" onchange="rQ()"><option value="all">All months</option></select>
+    <select id="qC" onchange="rQ()"><option value="all">All CRCs</option></select>
+  </div>
+  <div id="qKPIs" class="kg"></div>
+  <div class="cc"><div class="ct">Avg resolution days by trial</div><div style="position:relative;width:100%;height:280px"><canvas id="qC2"></canvas></div></div>
+</div>
+
+<div id="page-mvs" class="pg">
+  <div class="pt">Monitoring Visits</div><div class="ps">MVs completed and Follow-Up Letters status</div>
+  <div class="fb"><span class="fl">Filter:</span>
+    <select id="mY" onchange="rMV()"><option value="all">All years</option></select>
+    <select id="mM" onchange="rMV()"><option value="all">All months</option></select>
+    <select id="mS" onchange="rMV()"><option value="all">All studies</option></select>
+  </div>
+  <div id="mKPIs" class="kg"></div>
+  <div class="cc"><div class="ct">FUL receipt by CRC</div><div style="position:relative;width:100%;height:260px"><canvas id="mC"></canvas></div></div>
+</div>
+
+<div id="page-actions" class="pg">
+  <div class="pt">Action Items</div><div class="ps">Open/closed status, resolution times, and activity by trial</div>
+  <div class="fb"><span class="fl">Filter:</span>
+    <select id="aY" onchange="rAI()"><option value="all">All years</option></select>
+    <select id="aC" onchange="rAI()"><option value="all">All CRCs</option></select>
+    <select id="aSt" onchange="rAI()"><option value="all">All</option><option value="Y">Closed</option><option value="N">Open</option></select>
+  </div>
+  <div class="fb"><span class="fl">MV Month:</span>
+    <select id="aMV" onchange="rAI()"><option value="all">All months</option></select>
+    <span class="fl" style="margin-left:12px">Resolution Month:</span>
+    <select id="aM" onchange="rAI()"><option value="all">All months</option></select>
+  </div>
+  <div id="aKPIs" class="kg"></div>
+  <div class="two">
+    <div class="cc"><div class="ct">Open vs closed by trial</div><div style="position:relative;width:100%;height:260px"><canvas id="aStC"></canvas></div></div>
+    <div class="cc"><div class="ct">Category breakdown</div><div style="position:relative;width:100%;height:260px"><canvas id="aCatC"></canvas></div></div>
+  </div>
+  <div class="cc"><div class="ct">Avg resolution days by trial</div><div class="cs">Goal: &le;14 days</div><div id="aRW" style="position:relative;width:100%;height:320px"><canvas id="aRC"></canvas></div></div>
+  <div class="cc"><div class="ct">Category vs. Study cross-tab</div><div class="cs">Which studies have AIs in which category</div><div id="aCatStudyTbl" style="overflow-x:auto"></div></div>
+</div>
+
+<div id="page-pds" class="pg">
+  <div class="pt">Protocol Deviations</div><div class="ps">Goal: 0 PDs per month</div>
+  <div class="fb"><span class="fl">Filter:</span>
+    <select id="pdY" onchange="rPD()"><option value="all">All years</option></select>
+    <select id="pdM" onchange="rPD()"><option value="all">All months</option></select>
+    <select id="pdC" onchange="rPD()"><option value="all">All CRCs</option></select>
+    <select id="pdClass" onchange="rPD()"><option value="all">All classifications</option></select>
+    <select id="pdSt" onchange="rPD()"><option value="all">All studies</option></select>
+  </div>
+  <div id="pdKPIs" class="kg"></div>
+  <div class="two">
+    <div class="cc"><div class="ct">PDs by trial</div><div style="position:relative;width:100%;height:260px"><canvas id="pdTC"></canvas></div></div>
+    <div class="cc"><div class="ct">PDs by category</div><div style="position:relative;width:100%;height:260px"><canvas id="pdCC"></canvas></div></div>
+  </div>
+</div>
+
+<div id="page-recruitment" class="pg">
+  <div class="pt">Recruitment Overview</div><div class="ps">Screened vs randomized — cumulative all trials</div>
+  <div class="fb"><span class="fl">Filter:</span>
+    <select id="rY" onchange="rRec()"><option value="all">All years</option></select>
+    <select id="rM" onchange="rRec()"><option value="all">All months</option></select>
+    <select id="rCRC" onchange="rRec()"><option value="all">All CRCs</option></select>
+    <select id="rArea" onchange="rRec()"><option value="all">All areas</option></select>
+    <select id="rPhase" onchange="rRec()"><option value="all">All phases</option></select>
+    <select id="rSt" onchange="rRec()"><option value="all">All studies</option></select>
+  </div>
+  <div id="recKPIs" class="kg"></div>
+  <div class="cc"><div class="ct">Screen failures vs randomized by trial</div><div id="recW" style="position:relative;width:100%;height:400px"><canvas id="recC"></canvas></div></div>
+  <div class="cc"><div class="ct">Progress, screen failure rate &amp; patients-to-screen projection</div><div class="cs">Validation goal: first subject randomized within 21 days of site activation</div><div id="recProjTbl" style="overflow-x:auto"></div></div>
+</div>
+
+<div id="page-progress" class="pg">
+  <div class="pt">Recruitment Progress</div><div class="ps">% of patient commitment — goal: 80%</div>
+  <div class="fb"><span class="fl">Filter:</span>
+    <select id="prY" onchange="rPr()"><option value="all">All years</option></select>
+    <select id="prM" onchange="rPr()"><option value="all">All months</option></select>
+    <select id="prC" onchange="rPr()"><option value="all">All CRCs</option></select>
+  </div>
+  <div id="prKPIs" class="kg"></div>
+  <div class="cc"><div class="ct">Recruitment performance % by trial</div><div id="prW" style="position:relative;width:100%;height:440px"><canvas id="prC2"></canvas></div></div>
+</div>
+
+<div id="page-veeva" class="pg">
+  <div class="pt">Veeva Tasks TAT</div><div class="ps">Average days to complete tasks — goal: &le;5 days</div>
+  <div class="fb"><span class="fl">Filter:</span>
+    <select id="vvAssY" onchange="rVV()"><option value="all">All years</option></select>
+    <select id="vvAssM" onchange="rVV()"><option value="all">Assignment month</option></select>
+    <select id="vvComM" onchange="rVV()"><option value="all">Completion month</option></select>
+    <select id="vvOwner" onchange="rVV()"><option value="all">All staff</option></select>
+    <select id="vvSt" onchange="rVV()"><option value="all">All studies</option></select>
+  </div>
+  <div id="vvKPIs" class="kg"></div>
+  <div class="cc"><div class="ct">Task duration by staff member</div><div id="vvW" style="position:relative;width:100%;height:360px"><canvas id="vvC"></canvas></div></div>
+</div>
+
+<div id="page-crc" class="pg">
+  <div class="pt">CRC Performance</div><div class="ps">Weighted performance score — goal: 80%</div>
+  <div class="fb"><span class="fl">Filter:</span>
+    <select id="crY" onchange="rCRC()"><option value="all">All years</option></select>
+    <select id="crM" onchange="rCRC()"><option value="all">All months</option></select>
+  </div>
+  <div id="crKPIs" class="kg"></div>
+  <div class="cc"><div class="ct">Performance breakdown by CRC</div><div style="position:relative;width:100%;height:300px"><canvas id="crC"></canvas></div></div>
+  <div class="cc"><div class="ct">Auto-calculated sub-scores (validation)</div><div class="cs">Compare with the values stored in your Sheet</div><div id="crcAutoTbl" style="overflow-x:auto"></div></div>
+</div>
+
+<div id="page-consolidate" class="pg">
+  <div class="pt">QIs &mdash; Consolidate</div><div class="ps">Year-to-date trend for all indicators vs goal</div>
+  <div class="fb"><span class="fl">Year:</span>
+    <select id="conY" onchange="rCon()"></select>
+  </div>
+  <div class="two">
+    <div class="cc"><div class="ct">CRF Data Entry (days)</div><div style="position:relative;width:100%;height:200px"><canvas id="con1"></canvas></div></div>
+    <div class="cc"><div class="ct">Query resolution (days)</div><div style="position:relative;width:100%;height:200px"><canvas id="con2"></canvas></div></div>
+  </div>
+  <div class="two">
+    <div class="cc"><div class="ct">AIs closed (%)</div><div style="position:relative;width:100%;height:200px"><canvas id="con3"></canvas></div></div>
+    <div class="cc"><div class="ct">AIs resolution avg (days)</div><div style="position:relative;width:100%;height:200px"><canvas id="con4"></canvas></div></div>
+  </div>
+  <div class="two">
+    <div class="cc"><div class="ct">Follow-up letters receipt (%)</div><div style="position:relative;width:100%;height:200px"><canvas id="con5"></canvas></div></div>
+    <div class="cc"><div class="ct">PI MVs presence (%)</div><div style="position:relative;width:100%;height:200px"><canvas id="con6"></canvas></div></div>
+  </div>
+  <div class="two">
+    <div class="cc"><div class="ct">SAE reporting (%)</div><div style="position:relative;width:100%;height:200px"><canvas id="con7"></canvas></div></div>
+    <div class="cc"><div class="ct">SUSAR repository review (%)</div><div style="position:relative;width:100%;height:200px"><canvas id="con8"></canvas></div></div>
+  </div>
+  <div class="two">
+    <div class="cc"><div class="ct">IP receipt confirmation (%)</div><div style="position:relative;width:100%;height:200px"><canvas id="con9"></canvas></div></div>
+    <div class="cc"><div class="ct">PDs identified during month</div><div style="position:relative;width:100%;height:200px"><canvas id="con10"></canvas></div></div>
+  </div>
+</div>
+
+</div></div></div>
+<script>
+document.getElementById("lgo").src="data:image/png;base64,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";
+// ===== UTILIDADES GENERALES =====
+const SID='1jp48Lvcdg4f7DhTrrKO5tsBF7yHNJYUJyeClpwhTimQ';
+const BASE='https://docs.google.com/spreadsheets/d/'+SID+'/gviz/tq?tqx=out:json&sheet=';
+const C={b:'#1B3A6B',m:'#2B5BA8',a:'#4A90D9',ok:'#1D9E75',ng:'#E24B4A',w:'#BA7517',g:'rgba(0,0,0,0.06)'};
+let D={};let CH={};
+const TODAY = new Date(); // fecha actual real del navegador
+
+function dc(id){if(CH[id]){CH[id].destroy();delete CH[id];}}
+
+async function fs(name){
+  const r=await fetch(BASE+encodeURIComponent(name));
+  const t=await r.text();
+  const j=JSON.parse(t.replace(/^[^(]+\(/,'').replace(/\);\s*$/,''));
+  const cols=j.table.cols.map(c=>c.label.trim());
+  return j.table.rows.map(r=>Object.fromEntries(cols.map((c,i)=>{
+    const v=r.c[i]?.v??null;
+    return [c, typeof v==='string'?v.trim():v];
+  })));
+}
+
+function mn(m){return MONTH_NUM[m]||0;}
+const MONTH_NUM = {Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12,
+  January:1,February:2,March:3,April:4,June:6,July:7,August:8,September:9,October:10,November:11,December:12};
+
+// Excel serial date -> JS Date (las hojas de Google Sheets devuelven distintos formatos)
+function xDate(v){
+  if(v===null||v===undefined||v==='') return null;
+  if(v instanceof Date) return v;
+  if(typeof v==='string'){
+    // gviz a veces devuelve fechas como "Date(2026,4,31)"
+    const m=v.match(/^Date\((\d+),(\d+),(\d+)\)/);
+    if(m) return new Date(+m[1], +m[2], +m[3]);
+    const d=new Date(v);
+    return isNaN(d)?null:d;
+  }
+  if(typeof v==='number'){
+    const utc_days=Math.floor(v-25569);
+    const utc_value=utc_days*86400;
+    return new Date(utc_value*1000);
+  }
+  return null;
+}
+
+function daysBetween(d1,d2){
+  if(!d1||!d2) return null;
+  return Math.round((d2-d1)/(1000*60*60*24));
+}
+
+function avg(arr){
+  const v=arr.filter(x=>x!==null&&x!==undefined&&!isNaN(x));
+  return v.length? v.reduce((s,x)=>s+x,0)/v.length : null;
+}
+
+function avgOfGroupAverages(rows, groupField, valueField){
+  const groups={};
+  rows.forEach(r=>{
+    const g=r[groupField];
+    const v=parseFloat(r[valueField]);
+    if(!g || isNaN(v)) return;
+    if(!groups[g]) groups[g]=[];
+    groups[g].push(v);
+  });
+  const studyAverages=Object.values(groups).map(arr=>avg(arr));
+  return avg(studyAverages.filter(x=>x!==null));
+}
+
+function kc(lbl,val,goal,u='',low=false){
+  const nv=parseFloat(val),ng=parseFloat(goal);
+  let st='neutral',sl='';
+  if(!isNaN(nv)&&!isNaN(ng)){const ok=low?nv<=ng:nv>=ng;st=ok?'good':'bad';sl=ok?'On track':'Off track';}
+  const dv=isNaN(nv)?(val||'—'):(Number.isInteger(nv)?nv:nv.toFixed(1));
+  return '<div class="kc '+st+'"><div class="kl">'+lbl+'</div><div class="kv">'+dv+u+'</div>'+(!isNaN(ng)?'<div class="kg2">Goal: '+ng+u+'</div>':'')+(sl?'<span class="ks '+(st==='good'?'on':'off')+'">'+sl+'</span>':'')+'</div>';
+}
+
+function sp(pg){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+pg).classList.add('active');
+  document.getElementById('nav-'+pg).classList.add('active');
+}
+
+// ===== CARGA DE DATOS =====
+async function load(){
+  document.getElementById('lu').textContent='Syncing...';
+  try{
+    const [vi,qu,mv,ai,pd,re,ve,sp2,cp]=await Promise.all([
+      fs('Patients Visit'),fs('Open Queries'),fs('Monitoring Visit'),fs('Action Items'),
+      fs('PDS-1'),fs('Recruitment'),fs('Veeva TAT'),fs('Consolidate'),
+      fs('CRC Performance ')
+    ]);
+    D={vi,qu,mv,ai,pd,re,ve,sp:sp2,cp};
+    document.getElementById('lu').textContent='Updated '+new Date().toLocaleTimeString();
+    pf();
+    rSum();rVis();rCRF();rQ();rMV();rAI();rPD();rRec();rPr();rVV();rCRC();rCon();
+  }catch(e){
+    document.getElementById('lu').textContent='Error — check Sheet sharing';
+    document.getElementById('sKPIs').innerHTML='<div class="err">Could not load Google Sheets. Make sure sharing is "Anyone with the link — Viewer" then click Refresh. Error: '+e.message+'</div>';
+    console.error(e);
+  }
+}
+
+function pf(){
+  const mo_ord=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const mo_short=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  const crcs=[...new Set(D.vi.filter(r=>r['Record Type']!=='Average').map(r=>r['CRC']).filter(Boolean))].sort();
+  const areas=[...new Set(D.vi.map(r=>r['Thera Area']).filter(Boolean))].sort();
+  const sts=[...new Set(D.mv.map(r=>r['Study_Name']).filter(Boolean))].sort();
+  const pdCrcs=[...new Set(D.pd.map(r=>r['CRC']).filter(Boolean))].sort();
+  const rCrcs=[...new Set(D.re.map(r=>r['Lead CRC']).filter(Boolean))].sort();
+  const rAreas=[...new Set(D.re.map(r=>r['Therapeutic Area']).filter(Boolean))].sort();
+
+  // Meses desde Patients Visit (ordenados cronológicamente)
+  const viMonths=[...new Set(D.vi.filter(r=>r['Record Type']!=='Average'&&r['Month']).map(r=>r['Month']))].sort((a,b)=>mo_ord.indexOf(a)-mo_ord.indexOf(b));
+  // Meses desde Action Items (usando mes calculado de Expected resolution date)
+  const aiMonths=mo_short.filter(m=>D.ai.some(r=>r['Month']===m||r['Month']===mo_ord[mo_short.indexOf(m)]));
+  // Meses desde PDS-1
+  const pdDates=D.pd.map(r=>xDate(r['Identification Date (IMV)'])).filter(Boolean);
+  const pdMonths=[...new Set(pdDates.map(d=>mo_short[d.getMonth()]))].sort((a,b)=>mo_short.indexOf(a)-mo_short.indexOf(b));
+  const pdYears=[...new Set(pdDates.map(d=>String(d.getFullYear())))].sort((a,b)=>b-a);  // Meses desde CRC Performance
+  const crcMonths=[...new Set(D.cp.map(r=>r['Month']).filter(Boolean))].sort((a,b)=>mo_short.indexOf(a)-mo_short.indexOf(b));
+  // Meses desde Consolidate
+  const sumMonths=[...new Set(D.sp.map(r=>r['Month']).filter(Boolean))].sort((a,b)=>mo_short.indexOf(a)-mo_short.indexOf(b));
+  // Meses desde Open Queries
+  const qMonths=mo_short.filter(m=>D.qu.some(r=>{const my=parseMonthYearFromDate(r['Month metrics measured']);return my.label===m;}));
+  // Meses desde Monitoring Visit
+  const mvMonths=[...new Set(D.mv.map(r=>r['Month']).filter(Boolean))].sort((a,b)=>mo_ord.indexOf(a)-mo_ord.indexOf(b));
+  // Meses desde Recruitment
+  const prMonths=[...new Set(D.re.map(r=>r['Month']).filter(Boolean))].sort((a,b)=>mo_short.indexOf(a)-mo_short.indexOf(b));
+
+  function fill(id,items,dv='all',dl='All'){
+    const s=document.getElementById(id);if(!s)return;
+    s.innerHTML='<option value="'+dv+'">'+dl+'</option>'+items.map(v=>'<option value="'+v+'">'+v+'</option>').join('');
+  }
+  function fillMonths(id,months,label='All months'){
+    const s=document.getElementById(id);if(!s)return;
+    s.innerHTML='<option value="all">'+label+'</option>'+months.map(m=>'<option value="'+m+'">'+m+'</option>').join('');
+  }
+
+  fill('vC',crcs);fill('cC',crcs);fill('qC',crcs);fill('aC',crcs);
+  fill('vA',areas);fill('rArea',rAreas);
+  fill('mS',sts,'all','All studies');
+  fill('pdC',pdCrcs);fill('rCRC',rCrcs);fill('prC',rCrcs);
+  fill('pdClass',[...new Set(D.pd.map(r=>r['Classification']).filter(Boolean))].sort(),'all','All classifications');
+  fill('pdSt',[...new Set(D.pd.map(r=>r['Study Acronym']).filter(Boolean))].sort(),'all','All studies');
+
+
+  // Anos disponibles por hoja (orden descendente)
+  const viYears=[...new Set(D.vi.filter(r=>r['Record Type']!=='Average'&&r['Year']).map(r=>String(Math.round(r['Year']))))].sort((a,b)=>b-a);
+  const spYears=[...new Set(D.sp.filter(r=>r['Year']).map(r=>String(Math.round(r['Year']))))].sort((a,b)=>b-a);
+  const cpYears=[...new Set(D.cp.filter(r=>r['Year']).map(r=>String(Math.round(r['Year']))))].sort((a,b)=>b-a);
+  const reYears=[...new Set(D.re.filter(r=>r['Period']).map(r=>{const d=xDate(r['Period']);return d?String(d.getFullYear()):null;}).filter(Boolean))].sort((a,b)=>b-a);
+  const mvYears=[...new Set(D.mv.filter(r=>r['Year']).map(r=>String(Math.round(r['Year']))))].sort((a,b)=>b-a);
+  const aiYears=[...new Set(D.ai.filter(r=>r['FUL receipt date']).map(r=>{
+    const ful=xDate(r['FUL receipt date']);
+    if(!ful) return null;
+    const exp=new Date(ful.getTime()+14*86400000);
+    return String(exp.getFullYear());
+  }).filter(Boolean))].sort((a,b)=>b-a);
+  const quYears=[...new Set(D.qu.filter(r=>r['Month metrics measured']).map(r=>{const d=xDate(r['Month metrics measured']);return d?String(d.getFullYear()):null}).filter(Boolean))].sort((a,b)=>b-a);
+
+  function fillYears(id,years,withAll=true,label='All years'){
+    const s=document.getElementById(id);if(!s)return;
+    const allOpt=withAll?'<option value="all">'+label+'</option>':'';
+    s.innerHTML=allOpt+years.map(y=>'<option value="'+y+'">'+y+'</option>').join('');
+  }
+
+  fillYears('vY',viYears);
+  fillYears('cY',viYears);
+  fillYears('qY',quYears);
+  fillYears('mY',mvYears);
+  fillYears('aY',aiYears);
+  fillYears('pdY',pdYears);
+  fillYears('rY',reYears);
+  fillYears('prY',reYears);
+  fillYears('crY',cpYears);
+  fillYears('sY',spYears,false);
+  fillYears('conY',spYears,false);
+
+  fillMonths('vM',viMonths);
+  fillMonths('cM',viMonths);
+  fillMonths('qM',qMonths);
+  fillMonths('mM',mvMonths);
+  fillMonths('aM',mo_short);
+  fillMonths('aMV',mo_short,'All MV months');
+  fillMonths('pdM',pdMonths);
+  fillMonths('prM',prMonths);
+  fillMonths('crM',crcMonths);
+  fillMonths('sM',sumMonths);
+}
+// ===== QI SUMMARY =====
+function rSum(){
+  if(!D.sp)return;
+  const yr=+document.getElementById('sY').value;
+  const mo=document.getElementById('sM').value;
+  const r=D.sp.find(x=>x['Month']===mo&&+x['Year']===yr);
+  document.getElementById('ssub').textContent='Life Clinical Trials — '+mo+' '+yr;
+  if(!r){document.getElementById('sKPIs').innerHTML='<div style="padding:20px;color:#6B7280;font-size:13px">No data for '+mo+' '+yr+'. Check your Google Sheet or select another period.</div>';return;}
+  document.getElementById('sKPIs').innerHTML=[
+    kc('CRF Data Entry',r['Data Entry'],r['Goal Data Entry'],' days',true),
+    kc('Query Resolution',r['Query resolution (days)'],r['Goal Query resolution (days)'],' days',true),
+    kc('AIs Closed',r['Als Closed (%)'],r['Goal Als Closed (%)'],'%'),
+    kc('AIs Resolution',r['AIs resolution (days average)'],r['Goal AIs resolution (days average)'],' days',true),
+    kc('FUL Receipt',r['Follow up letters receipt (%)'],r['Goal Follow up letters receipt (%)'],'%'),
+    kc('PI MVs Presence',r['PI MVs presence (%) (with documented phone contact)'],r['Goal PI MVs presence (%) (with documented phone contact)'],'%'),
+    kc('SAE Reporting',r['SAE reporting (%)'],r['Goal SAE reporting (%)'],'%'),
+    kc('IP Receipt',r['IP receipt confirmation (%)'],r['Goal IP receipt confirmation (%)'],'%'),
+    kc('PDs this month',r['PDs identified during the month'],0,'',true),
+    kc('SUSAR Review',r['SUSAR repository review (%)'],r['Goal SUSAR repository review (%)'],'%'),
+  ].join('');
+  const rows=D.sp.filter(x=>+x['Year']===yr).sort((a,b)=>mn(a['Month'])-mn(b['Month']));
+  const lbs=rows.map(x=>x['Month']);
+  dc('tC');
+  CH['tC']=new Chart(document.getElementById('tC'),{type:'line',data:{labels:lbs,datasets:[
+    {label:'CRF Entry (days)',data:rows.map(x=>x['Data Entry']),borderColor:C.m,backgroundColor:'rgba(43,91,168,0.08)',tension:0.3,pointRadius:4},
+    {label:'AIs Closed (%)',data:rows.map(x=>x['Als Closed (%)']),borderColor:C.ok,backgroundColor:'rgba(29,158,117,0.08)',tension:0.3,pointRadius:4},
+    {label:'FUL Receipt (%)',data:rows.map(x=>x['Follow up letters receipt (%)']),borderColor:C.a,backgroundColor:'rgba(74,144,217,0.08)',tension:0.3,pointRadius:4},
+    {label:'PI MVs (%)',data:rows.map(x=>x['PI MVs presence (%) (with documented phone contact)']),borderColor:C.w,backgroundColor:'rgba(186,117,23,0.08)',tension:0.3,pointRadius:4},
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:16,usePointStyle:true}}},scales:{y:{grid:{color:C.g},ticks:{font:{size:11}}},x:{grid:{display:false},ticks:{font:{size:11}}}}}});
+  const inds=[
+    {n:'CRF Data Entry',v:r['Data Entry'],g:r['Goal Data Entry'],u:' days',low:true},
+    {n:'Query Resolution',v:r['Query resolution (days)'],g:r['Goal Query resolution (days)'],u:' days',low:true},
+    {n:'AIs Closed %',v:r['Als Closed (%)'],g:r['Goal Als Closed (%)'],u:'%'},
+    {n:'AIs Resolution avg',v:r['AIs resolution (days average)'],g:r['Goal AIs resolution (days average)'],u:' days',low:true},
+    {n:'Follow-up Letters Receipt',v:r['Follow up letters receipt (%)'],g:r['Goal Follow up letters receipt (%)'],u:'%'},
+    {n:'PI MVs Presence',v:r['PI MVs presence (%) (with documented phone contact)'],g:r['Goal PI MVs presence (%) (with documented phone contact)'],u:'%'},
+    {n:'SAE Reporting',v:r['SAE reporting (%)'],g:r['Goal SAE reporting (%)'],u:'%'},
+    {n:'SUSAR Repository Review',v:r['SUSAR repository review (%)'],g:r['Goal SUSAR repository review (%)'],u:'%'},
+    {n:'IP Receipt Confirmation',v:r['IP receipt confirmation (%)'],g:r['Goal IP receipt confirmation (%)'],u:'%'},
+    {n:'PDs Identified',v:r['PDs identified during the month'],g:0,u:'',low:true},
+  ];
+  document.getElementById('iTbl').innerHTML='<table class="tb"><thead><tr><th>Indicator</th><th>Value</th><th>Goal</th><th>Status</th></tr></thead><tbody>'+inds.map(i=>{
+    const v=parseFloat(i.v),g=parseFloat(i.g);
+    const ok=isNaN(v)||isNaN(g)?null:(i.low?v<=g:v>=g);
+    const badge=ok===null?'':(ok?'<span class="bg2 bgg">On track</span>':'<span class="bg2 bgr">Off track</span>');
+    const dv=isNaN(v)?(i.v||'—'):(Number.isInteger(v)?v:v.toFixed(1));
+    return '<tr><td>'+i.n+'</td><td><strong>'+dv+i.u+'</strong></td><td>'+(isNaN(parseFloat(i.g))?i.g||'—':parseFloat(i.g))+i.u+'</td><td>'+badge+'</td></tr>';
+  }).join('')+'</tbody></table>';
+}
+
+// ===== PATIENT VISITS =====
+// Excluye filas Record Type (Patient Id) = 'Average' del conteo de visitas
+function rVis(){
+  if(!D.vi)return;
+  let rows=D.vi.filter(r=>r['Start Date']&&r['CRC']&&r['Record Type']!=='Average');
+  const yr=document.getElementById('vY').value,mo=document.getElementById('vM').value,crc=document.getElementById('vC').value,area=document.getElementById('vA').value;
+  if(yr!=='all')rows=rows.filter(r=>String(r['Year'])===yr);
+  if(mo!=='all')rows=rows.filter(r=>r['Month']===mo);
+  if(crc!=='all')rows=rows.filter(r=>r['CRC']===crc);
+  if(area!=='all')rows=rows.filter(r=>r['Thera Area']===area);
+  document.getElementById('vKPIs').innerHTML=[kc('Total Visits',rows.length,null),kc('Active CRCs',[...new Set(rows.map(r=>r['CRC']).filter(Boolean))].length,null),kc('Therapeutic Areas',[...new Set(rows.map(r=>r['Thera Area']).filter(Boolean))].length,null),kc('Trials',[...new Set(rows.map(r=>r['Study Name']).filter(Boolean))].length,null)].join('');
+  const bm={};rows.forEach(r=>{const m=r['Month'];if(m)bm[m]=(bm[m]||0)+1;});
+  const mo_ord=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const mLbs=mo_ord.filter(m=>bm[m]);
+  dc('vMC');CH['vMC']=new Chart(document.getElementById('vMC'),{type:'bar',data:{labels:mLbs,datasets:[{label:'Visits',data:mLbs.map(m=>bm[m]),backgroundColor:C.m,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:C.g},ticks:{font:{size:11}}},x:{grid:{display:false},ticks:{font:{size:11},autoSkip:false,maxRotation:45}}}}});
+  const ba={};rows.forEach(r=>{const a=r['Thera Area'];if(a)ba[a]=(ba[a]||0)+1;});
+  dc('vAC');CH['vAC']=new Chart(document.getElementById('vAC'),{type:'doughnut',data:{labels:Object.keys(ba),datasets:[{data:Object.values(ba),backgroundColor:['#2B5BA8','#1D9E75','#4A90D9','#BA7517','#E24B4A'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:10,usePointStyle:true}}}}});
+  const bc={};rows.forEach(r=>{const c=r['CRC'];if(c)bc[c]=(bc[c]||0)+1;});
+  const tot=rows.length;
+  dc('vCC');CH['vCC']=new Chart(document.getElementById('vCC'),{type:'bar',data:{labels:Object.keys(bc),datasets:[{label:'Visits',data:Object.values(bc),backgroundColor:C.a,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'Visits: '+ctx.parsed.y+' ('+(tot?Math.round(ctx.parsed.y/tot*100):0)+'%)'}}},scales:{y:{grid:{color:C.g},ticks:{font:{size:11}}},x:{grid:{display:false},ticks:{font:{size:11}}}}}});
+}
+
+// ===== CRF DATA ENTRY =====
+// Promedio de promedios por estudio, excluyendo filas marcadas como 'Average'
+function rCRF(){
+  if(!D.vi)return;
+  const yr=document.getElementById('cY').value,mo=document.getElementById('cM').value,crc=document.getElementById('cC').value;
+  let rows=D.vi.filter(r=>r['Number days to entry']!==null && r['Number days to entry']!=='' && r['Study Name'] && r['Record Type']!=='Average');
+  if(yr!=='all')rows=rows.filter(r=>String(r['Year'])===yr);
+  if(mo!=='all')rows=rows.filter(r=>r['Month']===mo);
+  if(crc!=='all')rows=rows.filter(r=>r['CRC']===crc);
+  const cumulativeAvg = avgOfGroupAverages(rows, 'Study Name', 'Number days to entry');
+  document.getElementById('cKPIs').innerHTML=[kc('Cumulative Avg',cumulativeAvg!==null?cumulativeAvg.toFixed(1):'—',5,' days',true),kc('Entries tracked',rows.length,null),kc('Trials',[...new Set(rows.map(r=>r['Study Name']))].length,null)].join('');
+  const bt={};rows.forEach(r=>{const t=r['Study Name'];if(t){if(!bt[t])bt[t]=[];bt[t].push(+r['Number days to entry']);}});
+  const lbs=Object.keys(bt).sort((a,b)=>{const aa=avg(bt[a]),ab=avg(bt[b]);return ab-aa;});
+  const avgs=lbs.map(t=>+avg(bt[t]).toFixed(1));
+  const w=document.getElementById('crfW');w.style.height=Math.max(320,lbs.length*36+80)+'px';
+  dc('crfC');CH['crfC']=new Chart(document.getElementById('crfC'),{type:'bar',data:{labels:lbs,datasets:[{label:'Avg days',data:avgs,backgroundColor:avgs.map(v=>v>5?'rgba(226,75,74,0.2)':'rgba(29,158,117,0.2)'),borderColor:avgs.map(v=>v>5?C.ng:C.ok),borderWidth:1.5,borderRadius:4},{label:'Goal (5 days)',data:lbs.map(()=>5),type:'line',borderColor:C.ng,borderDash:[5,5],borderWidth:1.5,pointRadius:0,fill:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},usePointStyle:true}}},scales:{x:{grid:{color:C.g},ticks:{font:{size:11}}},y:{grid:{display:false},ticks:{font:{size:10}}}}}});
+}
+// ===== OPEN QUERIES =====
+// Solo las filas 'General' (Study Subject ID) representan el promedio ya calculado por estudio.
+// El indicador LCT = promedio simple de esas filas General (cada una ya es un promedio de su estudio).
+function parseMonthYearFromDate(val){
+  const d = xDate(val);
+  if(!d) return {month:null, year:null, label:null};
+  const monthsShort=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return {month:d.getMonth()+1, year:d.getFullYear(), label:monthsShort[d.getMonth()]};
+}
+
+function rQ(){
+  if(!D.qu)return;
+  const yr=document.getElementById('qY').value,mo=document.getElementById('qM').value,crc=document.getElementById('qC').value;
+
+  // Todas las filas con Days Open válido
+  let allRows=D.qu.filter(r=>r['Days Open']!==null && r['Days Open']!=='');
+  allRows = allRows.map(r=>{
+    const my = parseMonthYearFromDate(r['Month metrics measured']);
+    return Object.assign({}, r, {_month:my.label, _year:my.year});
+  });
+
+  if(yr!=='all')allRows=allRows.filter(r=>String(r._year)===yr);
+  if(mo!=='all')allRows=allRows.filter(r=>r._month===mo);
+  if(crc!=='all')allRows=allRows.filter(r=>r['CRC']===crc);
+
+  // Separar filas General (pre-calculadas) de filas individuales
+  const genRows=allRows.filter(r=>r['Record Type']==='General');
+  const indRows=allRows.filter(r=>r['Record Type']!=='General');
+
+  let studyAvgs=[];
+
+  if(genRows.length>0){
+    // Usar filas General directamente (cada una ya es el promedio de un estudio)
+    studyAvgs=genRows.map(r=>({study:r['Study selected'], avg:parseFloat(r['Days Open'])}));
+  } else if(indRows.length>0){
+    // Calcular promedio por estudio desde filas individuales
+    const bt={};
+    indRows.forEach(r=>{const t=r['Study selected'];if(t){if(!bt[t])bt[t]=[];bt[t].push(parseFloat(r['Days Open']));}});
+    studyAvgs=Object.keys(bt).map(t=>({study:t, avg:avg(bt[t])}));
+  }
+
+  const cumulativeAvg = avg(studyAvgs.map(s=>s.avg));
+  document.getElementById('qKPIs').innerHTML=[
+    kc('Cumulative Avg',cumulativeAvg!==null?cumulativeAvg.toFixed(1):'—',5,' days',true),
+    kc('Studies tracked',studyAvgs.length,null)
+  ].join('');
+
+  const lbs=studyAvgs.map(s=>s.study);
+  const avgs2=studyAvgs.map(s=>+s.avg.toFixed(1));
+  dc('qC2');CH['qC2']=new Chart(document.getElementById('qC2'),{type:'bar',data:{labels:lbs,datasets:[{label:'Avg days',data:avgs2,backgroundColor:avgs2.map(v=>v>5?'rgba(226,75,74,0.2)':'rgba(29,158,117,0.2)'),borderColor:avgs2.map(v=>v>5?C.ng:C.ok),borderWidth:1.5,borderRadius:4},{label:'Goal (5 days)',data:lbs.map(()=>5),type:'line',borderColor:C.ng,borderDash:[5,5],borderWidth:1.5,pointRadius:0,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},usePointStyle:true}}},scales:{y:{grid:{color:C.g},ticks:{font:{size:11}}},x:{grid:{display:false},ticks:{font:{size:11},autoSkip:false,maxRotation:45}}}}});
+}
+
+// ===== MONITORING VISITS =====
+// FUL receipt %, PI presence %, FUL on time (<=14 días desde End Date)
+function rMV(){
+  if(!D.mv)return;
+  let rows=D.mv.filter(r=>r['Study_Name']);
+  const yr=document.getElementById('mY').value,mo=document.getElementById('mM').value,st=document.getElementById('mS').value;
+  if(yr!=='all')rows=rows.filter(r=>String(r['Year'])===yr);
+  if(mo!=='all')rows=rows.filter(r=>r['Month']===mo);
+  if(st!=='all')rows=rows.filter(r=>r['Study_Name']===st);
+  const occurred = rows.filter(r=>r['Did the visit occur?']==='Y');
+  const tot=occurred.length,fy=occurred.filter(r=>r['FUL received?']==='Y').length;
+  // FUL on time: Actual FUL receipt date <= End Date + 14
+  let onTime=0, lateCount=0, withDates=0;
+  occurred.forEach(r=>{
+    const end=xDate(r['End Date']);
+    const actual=xDate(r['Actual FUL receipt date']);
+    if(end&&actual){
+      withDates++;
+      const expected=new Date(end.getTime()+14*86400000);
+      if(actual<=expected) onTime++; else lateCount++;
+    }
+  });
+  const piPresent = occurred.filter(r=>r['PI present in closure? Y/N']==='Y').length;
+  document.getElementById('mKPIs').innerHTML=[
+    kc('Total MVs',tot,null),
+    kc('FUL Received',fy,null),
+    kc('FUL Receipt %',tot?Math.round(fy/tot*100):0,100,'%'),
+    kc('FUL On Time %',withDates?Math.round(onTime/withDates*100):0,100,'%'),
+    kc('PI Presence %',tot?Math.round(piPresent/tot*100):0,100,'%')
+  ].join('');
+  const bc={};occurred.forEach(r=>{const c=r['CRC'];if(!c)return;if(!bc[c])bc[c]={Y:0,N:0};bc[c][r['FUL received?']==='Y'?'Y':'N']++;});
+  const lbs=Object.keys(bc);
+  dc('mC');CH['mC']=new Chart(document.getElementById('mC'),{type:'bar',data:{labels:lbs,datasets:[{label:'FUL received',data:lbs.map(l=>bc[l].Y),backgroundColor:'rgba(29,158,117,0.2)',borderColor:C.ok,borderWidth:1.5,borderRadius:4},{label:'FUL pending',data:lbs.map(l=>bc[l].N),backgroundColor:'rgba(226,75,74,0.2)',borderColor:C.ng,borderWidth:1.5,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},usePointStyle:true}}},scales:{y:{grid:{color:C.g},stacked:true,ticks:{font:{size:11}}},x:{grid:{display:false},stacked:true,ticks:{font:{size:11}}}}}});
+}
+// ===== ACTION ITEMS =====
+// DAYS ELAPSED: cerrado -> FOR QC - FUL receipt date ; abierto -> HOY - FUL receipt date
+// Mes/año del AI se determina por Expected resolution date = FUL receipt date + 14 dias
+function aiComputed(row){
+  const ful = xDate(row['FUL receipt date']);
+  const closed = row['Closed? Y/N']==='Y';
+  let daysElapsed = row['DAYS ELAPSED']!==null && row['DAYS ELAPSED']!=='' ? parseFloat(row['DAYS ELAPSED']) : null;
+  if(ful){
+    if(closed){
+      const forQC = xDate(row['FOR QC']);
+      if(forQC) daysElapsed = daysBetween(ful, forQC);
+    } else {
+      daysElapsed = daysBetween(ful, TODAY);
+    }
+  }
+  let month=null, year=null;
+  if(ful){
+    const expected = new Date(ful.getTime()+14*86400000);
+    const monthsShort=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    month = monthsShort[expected.getMonth()];
+    year = expected.getFullYear();
+  }
+  return {daysElapsed, month, year, closed};
+}
+
+function rAI(){
+  if(!D.ai)return;
+  let rows=D.ai.filter(r=>r['Study']&&r['Action Item']);
+  const mo_short=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  rows = rows.map(r=>{
+    const comp = aiComputed(r);
+    // MV month: desde MV end date
+    const mvD = xDate(r['MV end date']);
+    const mvMonth = mvD ? mo_short[mvD.getMonth()] : null;
+    const mvYear = mvD ? String(mvD.getFullYear()) : null;
+    return Object.assign({}, r, {_days:comp.daysElapsed, _month:comp.month, _year:comp.year, _closed:comp.closed, _mvMonth:mvMonth, _mvYear:mvYear});
+  });
+  const yr=document.getElementById('aY').value;
+  const mo=document.getElementById('aM').value; // Resolution month
+  const mvMo=document.getElementById('aMV').value; // MV month
+  const crc=document.getElementById('aC').value;
+  const st=document.getElementById('aSt').value;
+  if(yr!=='all')rows=rows.filter(r=>String(r._year)===yr||r._mvYear===yr);
+  if(mo!=='all')rows=rows.filter(r=>r._month===mo);
+  if(mvMo!=='all')rows=rows.filter(r=>r._mvMonth===mvMo);
+  if(crc!=='all')rows=rows.filter(r=>r['CRC']===crc);
+  if(st!=='all')rows=rows.filter(r=>(r._closed?'Y':'N')===st);
+
+  const tot=rows.length,open=rows.filter(r=>!r._closed).length,closed=rows.filter(r=>r._closed).length;
+  const cDays=rows.filter(r=>r._closed&&r._days!==null).map(r=>r._days);
+  const oDays=rows.filter(r=>!r._closed&&r._days!==null).map(r=>r._days);
+  const avgC=avg(cDays)||0, avgO=avg(oDays)||0;
+  document.getElementById('aKPIs').innerHTML=[kc('Total AIs',tot,null),kc('Open',open,0,'',true),kc('Closed',closed,null),kc('Avg days to close',Math.round(avgC),14,' days',true),kc('Avg days open',Math.round(avgO),14,' days',true)].join('');
+
+  const bts={};rows.forEach(r=>{const t=r['Study'];if(!t)return;if(!bts[t])bts[t]={Y:0,N:0};bts[t][r._closed?'Y':'N']++;});
+  const stLbs=Object.keys(bts).sort((a,b)=>(bts[b].N+bts[b].Y)-(bts[a].N+bts[a].Y)).slice(0,15);
+  dc('aStC');CH['aStC']=new Chart(document.getElementById('aStC'),{type:'bar',data:{labels:stLbs,datasets:[{label:'Open',data:stLbs.map(l=>bts[l].N),backgroundColor:'rgba(226,75,74,0.2)',borderColor:C.ng,borderWidth:1.5,borderRadius:2},{label:'Closed',data:stLbs.map(l=>bts[l].Y),backgroundColor:'rgba(29,158,117,0.2)',borderColor:C.ok,borderWidth:1.5,borderRadius:2}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},usePointStyle:true}}},scales:{x:{grid:{color:C.g},stacked:true,ticks:{font:{size:11}}},y:{grid:{display:false},stacked:true,ticks:{font:{size:10}}}}}});
+
+  const bc={};rows.forEach(r=>{const c=r['Category'];if(c)bc[c]=(bc[c]||0)+1;});
+  dc('aCatC');CH['aCatC']=new Chart(document.getElementById('aCatC'),{type:'doughnut',data:{labels:Object.keys(bc),datasets:[{data:Object.values(bc),backgroundColor:['#2B5BA8','#1D9E75','#4A90D9','#BA7517','#E24B4A','#9F77DD','#6B7280','#0F6E56','#A32D2D','#7C5295','#2563EB'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10},padding:8,usePointStyle:true}}}}});
+
+  const btr={};rows.filter(r=>r._days!==null).forEach(r=>{const t=r['Study'];if(!t)return;if(!btr[t])btr[t]=[];btr[t].push(r._days);});
+  const rLbs=Object.keys(btr).sort((a,b)=>avg(btr[b])-avg(btr[a]));
+  const rAvgs=rLbs.map(t=>Math.round(avg(btr[t])));
+  const w=document.getElementById('aRW');w.style.height=Math.max(320,rLbs.length*30+80)+'px';
+  dc('aRC');CH['aRC']=new Chart(document.getElementById('aRC'),{type:'bar',data:{labels:rLbs,datasets:[{label:'Avg days',data:rAvgs,backgroundColor:rAvgs.map(v=>v>14?'rgba(226,75,74,0.2)':'rgba(29,158,117,0.2)'),borderColor:rAvgs.map(v=>v>14?C.ng:C.ok),borderWidth:1.5,borderRadius:4},{label:'Goal (14 days)',data:rLbs.map(()=>14),type:'line',borderColor:C.ng,borderDash:[5,5],borderWidth:1.5,pointRadius:0,fill:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},usePointStyle:true}}},scales:{x:{grid:{color:C.g},ticks:{font:{size:11}}},y:{grid:{display:false},ticks:{font:{size:10}}}}}});
+
+  // Cruce Categoría x Estudio
+  const catStudy={};
+  rows.forEach(r=>{
+    const cat=r['Category'], st2=r['Study'];
+    if(!cat||!st2) return;
+    if(!catStudy[cat]) catStudy[cat]={};
+    catStudy[cat][st2]=(catStudy[cat][st2]||0)+1;
+  });
+  const allStudies=[...new Set(rows.map(r=>r['Study']).filter(Boolean))].sort();
+  const allCats=Object.keys(catStudy).sort();
+  let tblHtml='<table class="tb"><thead><tr><th>Category</th>'+allStudies.map(s=>'<th>'+s+'</th>').join('')+'<th>Total</th></tr></thead><tbody>';
+  allCats.forEach(cat=>{
+    let rowTotal=0;
+    tblHtml+='<tr><td><strong>'+cat+'</strong></td>'+allStudies.map(s=>{
+      const v=catStudy[cat][s]||0; rowTotal+=v;
+      return '<td>'+(v||'—')+'</td>';
+    }).join('')+'<td><strong>'+rowTotal+'</strong></td></tr>';
+  });
+  tblHtml+='</tbody></table>';
+  const catEl=document.getElementById('aCatStudyTbl');
+  if(catEl) catEl.innerHTML=tblHtml;
+}
+// ===== PROTOCOL DEVIATIONS =====
+// Mes/año según 'Identification Date (IMV)'
+function pdComputed(row){
+  const d = xDate(row['Identification Date (IMV)']);
+  if(!d) return {month:null, year:null};
+  const monthsShort=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return {month:monthsShort[d.getMonth()], year:d.getFullYear()};
+}
+
+function rPD(){
+  if(!D.pd)return;
+  let rows=D.pd.filter(r=>r['Study Acronym']);
+  rows = rows.map(r=>{
+    const comp = pdComputed(r);
+    return Object.assign({}, r, {_month:comp.month, _year:comp.year});
+  });
+  const yr=document.getElementById('pdY').value,mo=document.getElementById('pdM').value,crc=document.getElementById('pdC').value;
+  const cls=document.getElementById('pdClass').value,st=document.getElementById('pdSt').value;
+  if(yr!=='all')rows=rows.filter(r=>String(r._year)===yr);
+  if(mo!=='all')rows=rows.filter(r=>r._month===mo);
+  if(crc!=='all')rows=rows.filter(r=>String(r['CRC']).trim()===crc);
+  if(cls!=='all')rows=rows.filter(r=>r['Classification']===cls);
+  if(st!=='all')rows=rows.filter(r=>r['Study Acronym']===st);
+  document.getElementById('pdKPIs').innerHTML=[kc('Total PDs',rows.length,0,'',true),kc('Trials affected',[...new Set(rows.map(r=>r['Study Acronym']))].length,null),kc('CRCs involved',[...new Set(rows.map(r=>r['CRC']).filter(Boolean))].length,null)].join('');
+  const bt={};rows.forEach(r=>{const t=r['Study Acronym'];bt[t]=(bt[t]||0)+1;});
+  const bcat={};rows.forEach(r=>{const c=r['Category'];if(c)bcat[c]=(bcat[c]||0)+1;});
+  dc('pdTC');CH['pdTC']=new Chart(document.getElementById('pdTC'),{type:'bar',data:{labels:Object.keys(bt),datasets:[{label:'PDs',data:Object.values(bt),backgroundColor:'rgba(226,75,74,0.2)',borderColor:C.ng,borderWidth:1.5,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:C.g},ticks:{stepSize:1,font:{size:11}}},x:{grid:{display:false},ticks:{font:{size:11}}}}}});
+  dc('pdCC');CH['pdCC']=new Chart(document.getElementById('pdCC'),{type:'doughnut',data:{labels:Object.keys(bcat),datasets:[{data:Object.values(bcat),backgroundColor:['rgba(226,75,74,0.3)','rgba(186,117,23,0.3)','rgba(74,144,217,0.3)','rgba(29,158,117,0.3)','rgba(43,91,168,0.3)','rgba(159,119,221,0.3)'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:10,usePointStyle:true}}}}});
+}
+
+// ===== RECRUITMENT =====
+// Validation: Days Elapsed (Date site activated -> First subject randomized) <= 21 dias
+// Screen Failure rate = SF acumulado / Screened acumulado
+// Proyeccion = (Goal - Randomized acumulado) / (1 - SF rate)
+function rRec(){
+  if(!D.re)return;
+  const mo_short=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  // Period llega como Date(2026,4,1) -> extraer mes y año
+  const enriched = D.re.map(r=>{
+    const d = xDate(r['Period']);
+    const _year = d ? String(d.getFullYear()) : null;
+    const _month = d ? mo_short[d.getMonth()] : null;
+    const _acr = r['Study Acronym'] ? String(r['Study Acronym']).trim() : null;
+    return Object.assign({}, r, {_year, _month, _acr});
+  }).filter(r=>r._acr);
+
+  // Llenar filtros solo la primera vez (para no sobreescribir selección del usuario)
+  const rStSel=document.getElementById('rSt');
+  if(rStSel && rStSel.options.length<=1){
+    const studies2=[...new Set(enriched.map(r=>r._acr).filter(Boolean))].sort();
+    rStSel.innerHTML='<option value="all">All studies</option>'+studies2.map(s=>'<option value="'+s+'">'+s+'</option>').join('');
+  }
+
+  const rYSel=document.getElementById('rY');
+  if(rYSel && rYSel.options.length<=1){
+    const years=[...new Set(enriched.map(r=>r._year).filter(Boolean))].sort((a,b)=>b-a);
+    rYSel.innerHTML='<option value="all">All years</option>'+years.map(y=>'<option value="'+y+'">'+y+'</option>').join('');
+  }
+  const rMSel=document.getElementById('rM');
+  if(rMSel && rMSel.options.length<=1){
+    const months=[...new Set(enriched.map(r=>r._month).filter(Boolean))].sort((a,b)=>mo_short.indexOf(a)-mo_short.indexOf(b));
+    rMSel.innerHTML='<option value="all">All months</option>'+months.map(m=>'<option value="'+m+'">'+m+'</option>').join('');
+  }
+  const phaseSel=document.getElementById('rPhase');
+  if(phaseSel && phaseSel.options.length<=1){
+    const phaseMap={};
+    enriched.forEach(r=>{const p=(r['Recruitment Phase']||'').trim();if(p){const k=p.toLowerCase();if(!phaseMap[k])phaseMap[k]=p;}});
+    const phases=Object.values(phaseMap).sort();
+    phaseSel.innerHTML='<option value="all">All phases</option>'+phases.map(p=>'<option value="'+p+'">'+p+'</option>').join('');
+  }
+
+  const yr=document.getElementById('rY').value;
+  const mo=document.getElementById('rM')?document.getElementById('rM').value:'all';
+  const crc=document.getElementById('rCRC').value;
+  const area=document.getElementById('rArea').value;
+  const phase=document.getElementById('rPhase')?document.getElementById('rPhase').value:'all';
+  const st=document.getElementById('rSt')?document.getElementById('rSt').value:'all';
+
+  let rows=[...enriched];
+  if(yr!=='all')rows=rows.filter(r=>r._year===yr);
+  if(mo!=='all')rows=rows.filter(r=>r._month===mo);
+  if(crc!=='all')rows=rows.filter(r=>r['Lead CRC']===crc);
+  if(area!=='all')rows=rows.filter(r=>r['Therapeutic Area']===area);
+  if(phase!=='all')rows=rows.filter(r=>(r['Recruitment Phase']||'').toLowerCase()===phase.toLowerCase());
+  if(st!=='all')rows=rows.filter(r=>r._acr===st);
+
+  // Si hay filtro de mes específico: tomar exactamente esa fila por estudio
+  // Si no: tomar la fila más reciente por estudio (acumulado más reciente)
+  const periodKey=r=>(+r._year||0)*100+(mo_short.indexOf(r._month));
+  const byStudy={};
+  rows.forEach(r=>{
+    if(!byStudy[r._acr]||periodKey(r)>periodKey(byStudy[r._acr]))byStudy[r._acr]=r;
+  });
+  const studies=Object.values(byStudy);
+
+  // KPIs: usar acumulado (Randomized, Screened, Screen failures)
+  const tR=studies.reduce((s,r)=>s+(+(r['Randomized']||0)),0);
+  const tS=studies.reduce((s,r)=>s+(+(r['Screened']||0)),0);
+  const tF=studies.reduce((s,r)=>s+(+(r['Screen failures']||0)),0);
+  // Actividad del mes (solo si hay filtro de mes)
+  const tRM=mo!=='all'?studies.reduce((s,r)=>s+(+(r['Randomized (Month)']||0)),0):null;
+  const tSM=mo!=='all'?studies.reduce((s,r)=>s+(+(r['Screened (Month)']||0)),0):null;
+  const tFM=mo!=='all'?studies.reduce((s,r)=>s+(+(r['Screen failures (Month)']||0)),0):null;
+  const sfRate=tS?(tF/tS*100):null;
+
+  document.getElementById('recKPIs').innerHTML=[
+    kc('Randomized (cumul.)',tR,null),
+    kc('Screened (cumul.)',tS,null),
+    kc('SF (cumul.)',tF,null),
+    kc('SF Rate',sfRate!==null?sfRate.toFixed(1):'—',null,'%'),
+    ...(mo!=='all'?[kc('Randomized (month)',tRM,null),kc('Screened (month)',tSM,null),kc('SF (month)',tFM,null)]:[])
+  ].join('');
+
+  const lbs=Object.keys(byStudy).sort((a,b)=>(+(byStudy[b]['Screened']||0))-(+(byStudy[a]['Screened']||0))).slice(0,25);
+  const w=document.getElementById('recW');w.style.height=Math.max(400,lbs.length*28+80)+'px';
+  dc('recC');CH['recC']=new Chart(document.getElementById('recC'),{type:'bar',data:{labels:lbs,datasets:[
+    {label:'SF (cumul.)',data:lbs.map(l=>+(byStudy[l]['Screen failures']||0)),backgroundColor:'rgba(186,117,23,0.2)',borderColor:C.w,borderWidth:1.5,borderRadius:3},
+    {label:'Randomized (cumul.)',data:lbs.map(l=>+(byStudy[l]['Randomized']||0)),backgroundColor:'rgba(29,158,117,0.2)',borderColor:C.ok,borderWidth:1.5,borderRadius:3}
+  ]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},usePointStyle:true}}},scales:{x:{grid:{color:C.g},stacked:true,ticks:{font:{size:11}}},y:{grid:{display:false},stacked:true,ticks:{font:{size:10}}}}}});
+
+  // Tabla: muestra ambas columnas (mes y acumulado) cuando hay filtro de mes
+  const showMonth = mo!=='all';
+  let projHtml='<table class="tb" style="font-size:11px"><thead><tr><th>Study</th><th>Phase</th><th>Goal</th>';
+  if(showMonth) projHtml+='<th>Rand.(month)</th><th>Scr.(month)</th><th>SF(month)</th>';
+  projHtml+='<th>Rand.(cumul.)</th><th>Progress %</th><th>SF Rate %</th><th>To Screen</th><th>Active</th><th>Complete</th><th>Discon.</th><th>Lost FU</th><th>Days to 1st</th><th>Validation</th></tr></thead><tbody>';
+  Object.keys(byStudy).sort().forEach(acr=>{
+    const r=byStudy[acr];
+    const goal=+(r['Goal']||0);
+    const randCum=+(r['Randomized']||0);
+    const scrCum=+(r['Screened']||0);
+    const sfCum=+(r['Screen failures']||0);
+    const randMo=+(r['Randomized (Month)']||0);
+    const scrMo=+(r['Screened (Month)']||0);
+    const sfMo=+(r['Screen failures (Month)']||0);
+    const studySF=scrCum?(sfCum/scrCum*100):null;
+    const progress=goal?(randCum/goal*100):null;
+    let patientsToScreen='—';
+    if(goal&&studySF!==null&&studySF<100){
+      const remaining=goal-randCum;
+      patientsToScreen=remaining<=0?0:Math.ceil(remaining/(1-studySF/100));
+    }
+    const activated=xDate(r['Date site activated']);
+    const firstRand=xDate(r['First subject randomized']);
+    let daysToFirst='—',validation='—';
+    if(activated&&firstRand){
+      daysToFirst=daysBetween(activated,firstRand);
+      validation=daysToFirst<=21?'<span class="bg2 bgg">Meet</span>':'<span class="bg2 bgr">Not Meet</span>';
+    }
+    projHtml+='<tr><td>'+acr+'</td><td>'+(r['Recruitment Phase']||'—')+'</td><td>'+(goal||'—')+'</td>';
+    if(showMonth) projHtml+='<td>'+randMo+'</td><td>'+scrMo+'</td><td>'+sfMo+'</td>';
+    projHtml+='<td>'+randCum+'</td><td>'+(progress!==null?progress.toFixed(0)+'%':'—')+'</td><td>'+(studySF!==null?studySF.toFixed(1)+'%':'—')+'</td><td>'+patientsToScreen+'</td>';
+    projHtml+='<td>'+(+(r['Active']||0))+'</td><td>'+(+(r['Complete']||0))+'</td><td>'+(+(r['Discontinued']||0))+'</td><td>'+(+(r['Lost to Follow']||0))+'</td>';
+    projHtml+='<td>'+daysToFirst+'</td><td>'+validation+'</td></tr>';
+  });
+  projHtml+='</tbody></table>';
+  const projEl=document.getElementById('recProjTbl');
+  if(projEl)projEl.innerHTML=projHtml;
+}
+
+// ===== RECRUITMENT PROGRESS (ahora calculado desde Recruitment, por mes) =====
+function rPr(){
+  if(!D.re)return;
+  const mo_short=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  // Enriquecer con año y mes desde Period (tipo date)
+  const enriched=D.re.map(r=>{
+    const d=xDate(r['Period']);
+    const _year=d?String(d.getFullYear()):null;
+    const _month=d?mo_short[d.getMonth()]:null;
+    const _acr=r['Study Acronym']?String(r['Study Acronym']).trim():null;
+    return Object.assign({},r,{_year,_month,_acr});
+  }).filter(r=>r._acr&&r['Goal']);
+
+  // Llenar filtros solo la primera vez
+  const prYSel=document.getElementById('prY');
+  if(prYSel&&prYSel.options.length<=1){
+    const years=[...new Set(enriched.map(r=>r._year).filter(Boolean))].sort((a,b)=>b-a);
+    prYSel.innerHTML='<option value="all">All years</option>'+years.map(y=>'<option value="'+y+'">'+y+'</option>').join('');
+  }
+  const prMSel=document.getElementById('prM');
+  if(prMSel&&prMSel.options.length<=1){
+    const months=[...new Set(enriched.map(r=>r._month).filter(Boolean))].sort((a,b)=>mo_short.indexOf(a)-mo_short.indexOf(b));
+    prMSel.innerHTML='<option value="all">All months</option>'+months.map(m=>'<option value="'+m+'">'+m+'</option>').join('');
+  }
+
+  const yr=document.getElementById('prY').value;
+  const mo=document.getElementById('prM').value;
+  const crc=document.getElementById('prC').value;
+
+  let rows=[...enriched];
+  if(yr!=='all')rows=rows.filter(r=>r._year===yr);
+  if(mo!=='all')rows=rows.filter(r=>r._month===mo);
+  if(crc!=='all')rows=rows.filter(r=>r['Lead CRC']===crc);
+
+  // Tomar la fila más reciente por estudio
+  const periodKey=r=>(+r._year||0)*100+mo_short.indexOf(r._month);
+  const latestByStudy={};
+  rows.forEach(r=>{
+    if(!latestByStudy[r._acr]||periodKey(r)>periodKey(latestByStudy[r._acr]))latestByStudy[r._acr]=r;
+  });
+
+  const withProgress=Object.values(latestByStudy).map(r=>{
+    const goal=+(r['Goal']||0);
+    const randCum=+(r['Randomized']||0);
+    const progress=goal?(randCum/goal*100):null;
+    return Object.assign({},r,{_progress:progress});
+  }).filter(r=>r._progress!==null);
+
+  const avgProgress=avg(withProgress.map(r=>r._progress));
+  document.getElementById('prKPIs').innerHTML=[
+    kc('Overall Performance',avgProgress!==null?avgProgress.toFixed(1):'—',80,'%'),
+    kc('At 100%+',withProgress.filter(r=>r._progress>=100).length,null),
+    kc('Below 50%',withProgress.filter(r=>r._progress<50).length,null)
+  ].join('');
+
+  const sorted=withProgress.sort((a,b)=>b._progress-a._progress);
+  const lbs=sorted.map(r=>r._acr);
+  const perf=sorted.map(r=>Math.round(r._progress));
+  const w=document.getElementById('prW');w.style.height=Math.max(440,lbs.length*28+80)+'px';
+  dc('prC2');CH['prC2']=new Chart(document.getElementById('prC2'),{type:'bar',data:{labels:lbs,datasets:[{label:'Recruitment %',data:perf,backgroundColor:perf.map(v=>v>=80?'rgba(29,158,117,0.2)':v>=50?'rgba(186,117,23,0.2)':'rgba(226,75,74,0.2)'),borderColor:perf.map(v=>v>=80?C.ok:v>=50?C.w:C.ng),borderWidth:1.5,borderRadius:4},{label:'Goal (80%)',data:lbs.map(()=>80),type:'line',borderColor:C.ng,borderDash:[5,5],borderWidth:1.5,pointRadius:0,fill:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},usePointStyle:true}}},scales:{x:{grid:{color:C.g},ticks:{font:{size:11}},min:0},y:{grid:{display:false},ticks:{font:{size:10}}}}}});
+}
+// ===== VEEVA TAT =====
+// Para tareas abiertas (sin fecha de completado): duracion = fin de mes analizado - fecha de asignacion
+// Excluir tareas asignadas despues del mes analizado
+function veevaComputeRows(rows, monthEnd){
+  return rows.map(r=>{
+    const assigned = xDate(r['Task Assignment Date']);
+    const completed = xDate(r['Task Completion Date']);
+    if(!assigned) return null;
+    if(monthEnd && assigned > monthEnd) return null; // excluir asignadas despues del mes
+    let duration;
+    if(completed){
+      duration = parseFloat(r['Task Duration']);
+    } else if(monthEnd){
+      duration = daysBetween(assigned, monthEnd);
+    } else {
+      duration = daysBetween(assigned, TODAY);
+    }
+    return Object.assign({}, r, {_duration:duration});
+  }).filter(Boolean);
+}
+
+function rVV(){
+  if(!D.ve)return;
+  const mo_short=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  // Enriquecer con mes de asignación y mes de completado
+  const enriched=D.ve.filter(r=>r['Task Owner']).map(r=>{
+    const assDate=xDate(r['Task Assignment Date']);
+    const comDate=xDate(r['Task Completion Date']);
+    const _assYear=assDate?String(assDate.getFullYear()):null;
+    const _assMonth=assDate?mo_short[assDate.getMonth()]:null;
+    const _comMonth=comDate?mo_short[comDate.getMonth()]:null;
+    return Object.assign({},r,{_assYear,_assMonth,_comMonth});
+  });
+
+  // Llenar filtros solo la primera vez
+  const vvAssYSel=document.getElementById('vvAssY');
+  if(vvAssYSel&&vvAssYSel.options.length<=1){
+    const years=[...new Set(enriched.map(r=>r._assYear).filter(Boolean))].sort((a,b)=>b-a);
+    vvAssYSel.innerHTML='<option value="all">All years</option>'+years.map(y=>'<option value="'+y+'">'+y+'</option>').join('');
+  }
+  const vvAssMSel=document.getElementById('vvAssM');
+  if(vvAssMSel&&vvAssMSel.options.length<=1){
+    const months=[...new Set(enriched.map(r=>r._assMonth).filter(Boolean))].sort((a,b)=>mo_short.indexOf(a)-mo_short.indexOf(b));
+    vvAssMSel.innerHTML='<option value="all">Assignment month</option>'+months.map(m=>'<option value="'+m+'">'+m+'</option>').join('');
+  }
+  const vvComMSel=document.getElementById('vvComM');
+  if(vvComMSel&&vvComMSel.options.length<=1){
+    const months=[...new Set(enriched.map(r=>r._comMonth).filter(Boolean))].sort((a,b)=>mo_short.indexOf(a)-mo_short.indexOf(b));
+    vvComMSel.innerHTML='<option value="all">Completion month</option>'+months.map(m=>'<option value="'+m+'">'+m+'</option>').join('');
+  }
+  const vvOwnerSel=document.getElementById('vvOwner');
+  if(vvOwnerSel&&vvOwnerSel.options.length<=1){
+    const owners=[...new Set(enriched.map(r=>r['Task Owner']).filter(Boolean))].sort();
+    vvOwnerSel.innerHTML='<option value="all">All staff</option>'+owners.map(o=>'<option value="'+o+'">'+o.replace(' (VeevaID)','')+'</option>').join('');
+  }
+  const vvStSel=document.getElementById('vvSt');
+  if(vvStSel&&vvStSel.options.length<=1){
+    const studies=[...new Set(enriched.map(r=>r['Study Acronym']).filter(Boolean))].sort();
+    vvStSel.innerHTML='<option value="all">All studies</option>'+studies.map(s=>'<option value="'+s+'">'+s+'</option>').join('');
+  }
+
+  const assY=document.getElementById('vvAssY').value;
+  const assM=document.getElementById('vvAssM').value;
+  const comM=document.getElementById('vvComM').value;
+  const owner=document.getElementById('vvOwner').value;
+  const st=document.getElementById('vvSt').value;
+
+  let rows=[...enriched];
+  if(assY!=='all')rows=rows.filter(r=>r._assYear===assY);
+  if(assM!=='all')rows=rows.filter(r=>r._assMonth===assM);
+  if(comM!=='all')rows=rows.filter(r=>r._comMonth===comM);
+  if(owner!=='all')rows=rows.filter(r=>r['Task Owner']===owner);
+  if(st!=='all')rows=rows.filter(r=>r['Study Acronym']===st);
+
+  // Calcular duración usando fin del mes de asignación como corte para tareas abiertas
+  const monthEnd = assM!=='all'&&assY!=='all' ? new Date(+assY, mo_short.indexOf(assM)+1, 0) : TODAY;
+  const computed=veevaComputeRows(rows, monthEnd);
+
+  const avgTAT=avg(computed.map(r=>r._duration));
+  document.getElementById('vvKPIs').innerHTML=[
+    kc('Overall Avg TAT',avgTAT!==null?avgTAT.toFixed(2):'—',5,' days',true),
+    kc('Tasks tracked',computed.length,null),
+    kc('Staff members',[...new Set(computed.map(r=>r['Task Owner']))].length,null)
+  ].join('');
+
+  const bo={};computed.forEach(r=>{const o=r['Task Owner'];if(!o)return;if(!bo[o])bo[o]=[];bo[o].push(r._duration);});
+  const lbs=Object.keys(bo);
+  const avgs=lbs.map(l=>+avg(bo[l]).toFixed(2));
+  const counts=lbs.map(l=>bo[l].length);
+  const w=document.getElementById('vvW');w.style.height=Math.max(360,lbs.length*40+80)+'px';
+  dc('vvC');CH['vvC']=new Chart(document.getElementById('vvC'),{type:'bar',data:{labels:lbs.map(l=>l.replace(' (VeevaID)','')),datasets:[{label:'Avg days',data:avgs,backgroundColor:avgs.map(v=>v>5?'rgba(226,75,74,0.2)':'rgba(29,158,117,0.2)'),borderColor:avgs.map(v=>v>5?C.ng:C.ok),borderWidth:1.5,borderRadius:4},{label:'Goal (5 days)',data:lbs.map(()=>5),type:'line',borderColor:C.ng,borderDash:[5,5],borderWidth:1.5,pointRadius:0,fill:false},{label:'# Tasks',data:counts,type:'line',borderColor:C.a,borderWidth:1.5,pointRadius:5,fill:false,yAxisID:'y2'}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},usePointStyle:true}}},scales:{x:{grid:{color:C.g},ticks:{font:{size:11}}},y:{grid:{display:false},ticks:{font:{size:10}}},y2:{position:'right',grid:{display:false},ticks:{font:{size:10}}}}}});
+}
+
+// ===== CRC PERFORMANCE =====
+// Recalcula sub-scores automaticamente para el mes mas reciente; usa valores guardados para meses pasados
+function computeAutoScoresForCRC(crcName, monthLabel, yearVal, isLatestMonth){
+  const scores={};
+
+  // CRF Data Entry 10%
+  const pvRows = (D.vi||[]).filter(r=>r['CRC']===crcName && r['Record Type']!=='Average' && r['Number days to entry']!==null && r['Number days to entry']!=='' && r['Month']===monthLabel && String(r['Year'])===String(yearVal));
+  const crfAvg = avgOfGroupAverages(pvRows, 'Study Name', 'Number days to entry');
+  scores.crf = crfAvg!==null ? (crfAvg<=5?10:0) : null;
+
+  // CRF query response 10%
+  const genRows = (D.qu||[]).filter(r=>r['CRC']===crcName && r['Record Type']==='General' && r['Days Open']!==null);
+  const genWithDate = genRows.map(r=>{const my=parseMonthYearFromDate(r['Month metrics measured']);return Object.assign({},r,{_m:my.label,_y:my.year});}).filter(r=>r._m===monthLabel && String(r._y)===String(yearVal));
+  const qAvg = avg(genWithDate.map(r=>parseFloat(r['Days Open'])));
+  scores.query = qAvg!==null ? (qAvg<=5?10:0) : null;
+
+  // Veeva Vault TAT 15% -- nota: Veeva TAT no tiene columna CRC/Task Owner mapeada a CRC directamente en esta hoja;
+  // se omite el auto-calculo si no hay relacion directa por nombre
+  scores.veeva = null;
+
+  // Action Items 20% -- solo para el mes mas reciente
+  if(isLatestMonth){
+    const aiRows=(D.ai||[]).filter(r=>r['CRC']===crcName && r['Study']);
+    const openNow = aiRows.filter(r=>r['Closed? Y/N']==='N' || !r['Closed? Y/N']).length;
+    const closedThisMonth = aiRows.filter(r=>{
+      if(r['Closed? Y/N']!=='Y') return false;
+      const forQC=xDate(r['FOR QC']);
+      if(!forQC) return false;
+      const monthsShort=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      return monthsShort[forQC.getMonth()]===monthLabel && forQC.getFullYear()===+yearVal;
+    }).length;
+    const openAtStart = openNow + closedThisMonth;
+    scores.actionItems = openAtStart===0? 20 : (closedThisMonth/openAtStart)*20;
+  } else {
+    scores.actionItems = null; // usar valor guardado
+  }
+
+  // Protocol Deviations 20% -- proporcional inverso, calculable para cualquier mes con datos de PDS-1
+  const pdAllMonth=(D.pd||[]).filter(r=>{
+    const comp=pdComputed(r);
+    return comp.month===monthLabel && String(comp.year)===String(yearVal);
+  });
+  const pdTotalMonth = pdAllMonth.length;
+  const pdCRC = pdAllMonth.filter(r=>String(r['CRC']).trim()===crcName).length;
+  scores.pd = pdTotalMonth===0 ? 20 : (1-(pdCRC/pdTotalMonth))*20;
+
+  // Recruitment 15% -- promedio de progreso de estudios del CRC en ese periodo
+  const recRows=(D.re||[]).filter(r=>r['Lead CRC']===crcName);
+  const recRowsPeriod = recRows.filter(r=>{
+    // Period suele ser 'MMM-YYYY'; comparamos por Month*/Year si existen, o Period como texto
+    return r['Month']===monthLabel && String(r['Year'])===String(yearVal);
+  });
+  const progresses = recRowsPeriod.map(r=>{
+    const goal=+(r['Goal']||0);
+    const randCum=+(r['Randomized']||0);
+    return goal? (randCum/goal*100) : null;
+  }).filter(x=>x!==null);
+  const avgProgress = avg(progresses);
+  scores.recruitment = avgProgress!==null ? (avgProgress/100)*15 : null;
+
+  // Surveillance Response 10% -- sin datos aun
+  scores.surveillance = 0;
+
+  return scores;
+}
+
+function rCRC(){
+  if(!D.cp)return;
+  let rows=D.cp.filter(r=>r['Lead CRC']&&r['TOTAL Performance %']!==null);
+  const yr=document.getElementById('crY').value,mo=document.getElementById('crM').value;
+  if(yr!=='all')rows=rows.filter(r=>String(r['Year'])===yr);
+  if(mo!=='all')rows=rows.filter(r=>r['Month']===mo);
+  // Ordenar por Year+mes numerico real, no por el string de Period
+  const sortKey=r=>(+r['Year']||0)*100+mn(r['Month']);
+  const latest={};rows.forEach(r=>{if(!latest[r['Lead CRC']]||sortKey(r)>sortKey(latest[r['Lead CRC']]))latest[r['Lead CRC']]=r;});
+  const crcs=Object.values(latest);
+
+  // Determinar el periodo mas reciente disponible en TODA la hoja (sin filtros) para saber si recalculamos Action Items
+  const allRowsSorted=D.cp.filter(r=>r['Lead CRC']&&r['Month']&&r['Year']).sort((a,b)=>sortKey(b)-sortKey(a));
+  const mostRecentKey = allRowsSorted.length? sortKey(allRowsSorted[0]) : null;
+
+  const avgScore=crcs.length?avg(crcs.map(r=>+r['TOTAL Performance %'])):null;
+  document.getElementById('crKPIs').innerHTML=crcs.map(r=>kc(r['Lead CRC'],Math.round(+r['TOTAL Performance %']),80,'%')).join('')+(avgScore!==null?kc('Team Average',avgScore.toFixed(1),80,'%'):'');
+
+  const lbs=crcs.map(r=>r['Lead CRC']);
+  const cats=['Recruitment 15%','Action items 20%','Protocol Deviations 20%','CRF Data Entry 10%','CRF query response 10%','Veeva Vault TAT 15%'];
+  const cc=['#2B5BA8','#4A90D9','#1D9E75','#BA7517','#9F77DD','#E24B4A'];
+  dc('crC');CH['crC']=new Chart(document.getElementById('crC'),{type:'bar',data:{labels:lbs,datasets:cats.map((c,i)=>({label:c,data:crcs.map(r=>+(r[c]||0)),backgroundColor:cc[i]+'55',borderColor:cc[i],borderWidth:1.5,borderRadius:3}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10},padding:8,usePointStyle:true}}},scales:{x:{grid:{display:false},stacked:true,ticks:{font:{size:11}}},y:{grid:{color:C.g},stacked:true,ticks:{font:{size:11}},max:50}}}});
+
+  // Tabla comparativa: valor guardado en Sheet vs. recalculado automaticamente (solo informativo, para el mes seleccionado)
+  let autoHtml='<table class="tb"><thead><tr><th>CRC</th><th>CRF Entry (auto)</th><th>Query (auto)</th><th>Action Items (auto)</th><th>PDs (auto)</th><th>Recruitment (auto)</th><th>Total (auto, sin Veeva/Surv.)</th></tr></thead><tbody>';
+  crcs.forEach(r=>{
+    const crcName=r['Lead CRC'];
+    const isLatest = mostRecentKey!==null && sortKey(r)===mostRecentKey;
+    const s=computeAutoScoresForCRC(crcName, r['Month'], r['Year'], isLatest);
+    const total=(s.crf||0)+(s.query||0)+(s.actionItems!==null?s.actionItems:(+(r['Action items 20%']||0)))+(s.pd||0)+(s.recruitment||0);
+    autoHtml+='<tr><td>'+crcName+'</td><td>'+(s.crf!==null?s.crf:'—')+'</td><td>'+(s.query!==null?s.query:'—')+'</td><td>'+(s.actionItems!==null?s.actionItems.toFixed(1):'(usa guardado)')+'</td><td>'+(s.pd!==null?s.pd.toFixed(1):'—')+'</td><td>'+(s.recruitment!==null?s.recruitment.toFixed(1):'—')+'</td><td><strong>'+total.toFixed(1)+'</strong></td></tr>';
+  });
+  autoHtml+='</tbody></table><p style="font-size:11px;color:#6B7280;margin-top:8px">Nota: Veeva Vault TAT y Surveillance Response no se recalculan automáticamente todavía — Veeva TAT no tiene una columna que lo vincule directamente a un CRC, y Surveillance Response aún no tiene una hoja de registro. Action Items solo se recalcula para el mes más reciente.</p>';
+  const autoEl=document.getElementById('crcAutoTbl');
+  if(autoEl) autoEl.innerHTML=autoHtml;
+}
+
+// ===== CONSOLIDATE (sin cambios de logica, igual que antes) =====
+function mkT(id,data,field,gField,low=false){
+  const sorted=data.sort((a,b)=>mn(a['Month'])-mn(b['Month']));
+  const lbs=sorted.map(r=>r['Month']);
+  const vals=sorted.map(r=>r[field]!==null&&r[field]!==''?+r[field]:null);
+  const gv=sorted[0]?+sorted[0][gField]:null;
+  dc(id);CH[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels:lbs,datasets:[{label:field,data:vals,backgroundColor:vals.map(v=>v===null?'transparent':low?(v<=gv?'rgba(29,158,117,0.2)':'rgba(226,75,74,0.2)'):(v>=gv?'rgba(29,158,117,0.2)':'rgba(226,75,74,0.2)')),borderColor:vals.map(v=>v===null?'transparent':low?(v<=gv?C.ok:C.ng):(v>=gv?C.ok:C.ng)),borderWidth:1.5,borderRadius:3},{label:'Goal',data:lbs.map(()=>gv),type:'line',borderColor:C.ng,borderDash:[5,5],borderWidth:1.5,pointRadius:0,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:C.g},ticks:{font:{size:10}}},x:{grid:{display:false},ticks:{font:{size:10},autoSkip:false,maxRotation:45}}}}});
+}
+
+function rCon(){
+  if(!D.sp)return;
+  const yr=+document.getElementById('conY').value;
+  const rows=D.sp.filter(r=>+r['Year']===yr);
+  mkT('con1',[...rows],'Data Entry','Goal Data Entry',true);
+  mkT('con2',[...rows],'Query resolution (days)','Goal Query resolution (days)',true);
+  mkT('con3',[...rows],'Als Closed (%)','Goal Als Closed (%)');
+  mkT('con4',[...rows],'AIs resolution (days average)','Goal AIs resolution (days average)',true);
+  mkT('con5',[...rows],'Follow up letters receipt (%)','Goal Follow up letters receipt (%)');
+  mkT('con6',[...rows],'PI MVs presence (%) (with documented phone contact)','Goal PI MVs presence (%) (with documented phone contact)');
+  mkT('con7',[...rows],'SAE reporting (%)','Goal SAE reporting (%)');
+  mkT('con8',[...rows],'SUSAR repository review (%)','Goal SUSAR repository review (%)');
+  mkT('con9',[...rows],'IP receipt confirmation (%)','Goal IP receipt confirmation (%)');
+  mkT('con10',[...rows],'PDs identified during the month','Goal PDs identified during the month',true);
+}
+
+load();
+</script>
+</body>
+</html>
