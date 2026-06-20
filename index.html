@@ -962,7 +962,7 @@ function veevaComputeRows(rows, monthEnd){
       duration = daysBetween(assigned, TODAY);
     }
     return Object.assign({}, r, {_duration:duration});
-  }).filter(Boolean);
+  }).filter(r=>r!==null&&r._duration!==null&&r._duration!==undefined);
 }
 
 function rVV(){
