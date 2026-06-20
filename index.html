@@ -388,7 +388,9 @@ function pf(){
   const pdDates=D.pd.map(r=>xDate(r['Identification Date (IMV)'])).filter(Boolean);
   const pdMonths=[...new Set(pdDates.map(d=>mo_short[d.getMonth()]))].sort((a,b)=>mo_short.indexOf(a)-mo_short.indexOf(b));
   const pdYears=[...new Set(pdDates.map(d=>String(d.getFullYear())))].sort((a,b)=>b-a);  // Meses desde CRC Performance
-  const crcMonths=[...new Set(D.cp.map(r=>r['Month']).filter(Boolean))].sort((a,b)=>mo_short.indexOf(a)-mo_short.indexOf(b));
+  const cpDates=D.cp.map(r=>xDate(r['Period'])).filter(Boolean);
+  const crcMonths=[...new Set(cpDates.map(d=>mo_short[d.getMonth()]))].sort((a,b)=>mo_short.indexOf(a)-mo_short.indexOf(b));
+  const cpYears=[...new Set(cpDates.map(d=>String(d.getFullYear())))].sort((a,b)=>b-a);
   // Meses desde Consolidate
   const sumMonths=[...new Set(D.sp.map(r=>r['Month']).filter(Boolean))].sort((a,b)=>mo_short.indexOf(a)-mo_short.indexOf(b));
   // Meses desde Open Queries
@@ -418,7 +420,6 @@ function pf(){
   // Anos disponibles por hoja (orden descendente)
   const viYears=[...new Set(D.vi.filter(r=>r['Record Type']!=='Average'&&r['Year']).map(r=>String(Math.round(r['Year']))))].sort((a,b)=>b-a);
   const spYears=[...new Set(D.sp.filter(r=>r['Year']).map(r=>String(Math.round(r['Year']))))].sort((a,b)=>b-a);
-  const cpYears=[...new Set(D.cp.filter(r=>r['Year']).map(r=>String(Math.round(r['Year']))))].sort((a,b)=>b-a);
   const reYears=[...new Set(D.re.filter(r=>r['Period']).map(r=>{const d=xDate(r['Period']);return d?String(d.getFullYear()):null;}).filter(Boolean))].sort((a,b)=>b-a);
   const mvYears=[...new Set(D.mv.filter(r=>r['Year']).map(r=>String(Math.round(r['Year']))))].sort((a,b)=>b-a);
   const aiYears=[...new Set(D.ai.filter(r=>r['FUL receipt date']).map(r=>{
@@ -1106,18 +1107,29 @@ function computeAutoScoresForCRC(crcName, monthLabel, yearVal, isLatestMonth){
 
 function rCRC(){
   if(!D.cp)return;
-  let rows=D.cp.filter(r=>r['Lead CRC']&&r['TOTAL Performance %']!==null);
+  const mo_short=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  // Enriquecer con año y mes desde Period
+  const enriched=D.cp.filter(r=>r['Lead CRC']&&r['TOTAL Performance %']!==null).map(r=>{
+    const d=xDate(r['Period']);
+    const _year=d?String(d.getFullYear()):null;
+    const _month=d?mo_short[d.getMonth()]:null;
+    return Object.assign({},r,{_year,_month});
+  });
+
   const yr=document.getElementById('crY').value,mo=document.getElementById('crM').value;
-  if(yr!=='all')rows=rows.filter(r=>String(r['Year'])===yr);
-  if(mo!=='all')rows=rows.filter(r=>r['Month']===mo);
-  // Ordenar por Year+mes numerico real, no por el string de Period
-  const sortKey=r=>(+r['Year']||0)*100+mn(r['Month']);
+  let rows=[...enriched];
+  if(yr!=='all')rows=rows.filter(r=>r._year===yr);
+  if(mo!=='all')rows=rows.filter(r=>r._month===mo);
+
+  // Ordenar por año+mes real
+  const sortKey=r=>(+r._year||0)*100+mo_short.indexOf(r._month);
   const latest={};rows.forEach(r=>{if(!latest[r['Lead CRC']]||sortKey(r)>sortKey(latest[r['Lead CRC']]))latest[r['Lead CRC']]=r;});
   const crcs=Object.values(latest);
 
-  // Determinar el periodo mas reciente disponible en TODA la hoja (sin filtros) para saber si recalculamos Action Items
-  const allRowsSorted=D.cp.filter(r=>r['Lead CRC']&&r['Month']&&r['Year']).sort((a,b)=>sortKey(b)-sortKey(a));
-  const mostRecentKey = allRowsSorted.length? sortKey(allRowsSorted[0]) : null;
+  // Determinar el periodo más reciente de toda la hoja
+  const allSorted=[...enriched].sort((a,b)=>sortKey(b)-sortKey(a));
+  const mostRecentKey=allSorted.length?sortKey(allSorted[0]):null;
 
   const avgScore=crcs.length?avg(crcs.map(r=>+r['TOTAL Performance %'])):null;
   document.getElementById('crKPIs').innerHTML=crcs.map(r=>kc(r['Lead CRC'],Math.round(+r['TOTAL Performance %']),80,'%')).join('')+(avgScore!==null?kc('Team Average',avgScore.toFixed(1),80,'%'):'');
@@ -1132,7 +1144,7 @@ function rCRC(){
   crcs.forEach(r=>{
     const crcName=r['Lead CRC'];
     const isLatest = mostRecentKey!==null && sortKey(r)===mostRecentKey;
-    const s=computeAutoScoresForCRC(crcName, r['Month'], r['Year'], isLatest);
+    const s=computeAutoScoresForCRC(crcName, r._month, r._year, isLatest);
     const total=(s.crf||0)+(s.query||0)+(s.actionItems!==null?s.actionItems:(+(r['Action items 20%']||0)))+(s.pd||0)+(s.recruitment||0);
     autoHtml+='<tr><td>'+crcName+'</td><td>'+(s.crf!==null?s.crf:'—')+'</td><td>'+(s.query!==null?s.query:'—')+'</td><td>'+(s.actionItems!==null?s.actionItems.toFixed(1):'(usa guardado)')+'</td><td>'+(s.pd!==null?s.pd.toFixed(1):'—')+'</td><td>'+(s.recruitment!==null?s.recruitment.toFixed(1):'—')+'</td><td><strong>'+total.toFixed(1)+'</strong></td></tr>';
   });
