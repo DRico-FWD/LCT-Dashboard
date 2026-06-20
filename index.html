@@ -969,8 +969,8 @@ function rVV(){
   if(!D.ve)return;
   const mo_short=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-  // Enriquecer con mes de asignación y mes de completado
-  const enriched=D.ve.filter(r=>r['Task Owner']).map(r=>{
+  // Enriquecer TODOS los datos primero (sin filtros)
+  const allEnriched=D.ve.filter(r=>r['Task Owner']).map(r=>{
     const assDate=xDate(r['Task Assignment Date']);
     const comDate=xDate(r['Task Completion Date']);
     const _assYear=assDate?String(assDate.getFullYear()):null;
@@ -979,30 +979,30 @@ function rVV(){
     return Object.assign({},r,{_assYear,_assMonth,_comMonth});
   });
 
-  // Llenar filtros solo la primera vez
+  // Llenar filtros desde TODOS los datos (solo la primera vez)
   const vvAssYSel=document.getElementById('vvAssY');
   if(vvAssYSel&&vvAssYSel.options.length<=1){
-    const years=[...new Set(enriched.map(r=>r._assYear).filter(Boolean))].sort((a,b)=>b-a);
+    const years=[...new Set(allEnriched.map(r=>r._assYear).filter(Boolean))].sort((a,b)=>b-a);
     vvAssYSel.innerHTML='<option value="all">All years</option>'+years.map(y=>'<option value="'+y+'">'+y+'</option>').join('');
   }
   const vvAssMSel=document.getElementById('vvAssM');
   if(vvAssMSel&&vvAssMSel.options.length<=1){
-    const months=[...new Set(enriched.map(r=>r._assMonth).filter(Boolean))].sort((a,b)=>mo_short.indexOf(a)-mo_short.indexOf(b));
+    const months=[...new Set(allEnriched.map(r=>r._assMonth).filter(Boolean))].sort((a,b)=>mo_short.indexOf(a)-mo_short.indexOf(b));
     vvAssMSel.innerHTML='<option value="all">Assignment month</option>'+months.map(m=>'<option value="'+m+'">'+m+'</option>').join('');
   }
   const vvComMSel=document.getElementById('vvComM');
   if(vvComMSel&&vvComMSel.options.length<=1){
-    const months=[...new Set(enriched.map(r=>r._comMonth).filter(Boolean))].sort((a,b)=>mo_short.indexOf(a)-mo_short.indexOf(b));
+    const months=[...new Set(allEnriched.map(r=>r._comMonth).filter(Boolean))].sort((a,b)=>mo_short.indexOf(a)-mo_short.indexOf(b));
     vvComMSel.innerHTML='<option value="all">Completion month</option>'+months.map(m=>'<option value="'+m+'">'+m+'</option>').join('');
   }
   const vvOwnerSel=document.getElementById('vvOwner');
   if(vvOwnerSel&&vvOwnerSel.options.length<=1){
-    const owners=[...new Set(enriched.map(r=>r['Task Owner']).filter(Boolean))].sort();
+    const owners=[...new Set(allEnriched.map(r=>r['Task Owner']).filter(Boolean))].sort();
     vvOwnerSel.innerHTML='<option value="all">All staff</option>'+owners.map(o=>'<option value="'+o+'">'+o.replace(' (VeevaID)','')+'</option>').join('');
   }
   const vvStSel=document.getElementById('vvSt');
   if(vvStSel&&vvStSel.options.length<=1){
-    const studies=[...new Set(enriched.map(r=>r['Study Acronym']).filter(Boolean))].sort();
+    const studies=[...new Set(allEnriched.map(r=>r['Study Acronym']).filter(Boolean))].sort();
     vvStSel.innerHTML='<option value="all">All studies</option>'+studies.map(s=>'<option value="'+s+'">'+s+'</option>').join('');
   }
 
@@ -1012,7 +1012,8 @@ function rVV(){
   const owner=document.getElementById('vvOwner').value;
   const st=document.getElementById('vvSt').value;
 
-  let rows=[...enriched];
+  // Aplicar filtros
+  let rows=[...allEnriched];
   if(assY!=='all')rows=rows.filter(r=>r._assYear===assY);
   if(assM!=='all')rows=rows.filter(r=>r._assMonth===assM);
   if(comM!=='all')rows=rows.filter(r=>r._comMonth===comM);
@@ -1020,8 +1021,8 @@ function rVV(){
   if(st!=='all')rows=rows.filter(r=>r['Study Acronym']===st);
 
   // Calcular duración usando fin del mes de asignación como corte para tareas abiertas
-  const monthEnd = assM!=='all'&&assY!=='all' ? new Date(+assY, mo_short.indexOf(assM)+1, 0) : TODAY;
-  const computed=veevaComputeRows(rows, monthEnd);
+  const monthEnd=assM!=='all'&&assY!=='all'?new Date(+assY,mo_short.indexOf(assM)+1,0):TODAY;
+  const computed=veevaComputeRows(rows,monthEnd);
 
   const avgTAT=avg(computed.map(r=>r._duration));
   document.getElementById('vvKPIs').innerHTML=[
@@ -1038,8 +1039,6 @@ function rVV(){
   dc('vvC');CH['vvC']=new Chart(document.getElementById('vvC'),{type:'bar',data:{labels:lbs.map(l=>l.replace(' (VeevaID)','')),datasets:[{label:'Avg days',data:avgs,backgroundColor:avgs.map(v=>v>5?'rgba(226,75,74,0.2)':'rgba(29,158,117,0.2)'),borderColor:avgs.map(v=>v>5?C.ng:C.ok),borderWidth:1.5,borderRadius:4},{label:'Goal (5 days)',data:lbs.map(()=>5),type:'line',borderColor:C.ng,borderDash:[5,5],borderWidth:1.5,pointRadius:0,fill:false},{label:'# Tasks',data:counts,type:'line',borderColor:C.a,borderWidth:1.5,pointRadius:5,fill:false,yAxisID:'y2'}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},usePointStyle:true}}},scales:{x:{grid:{color:C.g},ticks:{font:{size:11}}},y:{grid:{display:false},ticks:{font:{size:10}}},y2:{position:'right',grid:{display:false},ticks:{font:{size:10}}}}}});
 }
 
-// ===== CRC PERFORMANCE =====
-// Recalcula sub-scores automaticamente para el mes mas reciente; usa valores guardados para meses pasados
 function computeAutoScoresForCRC(crcName, monthLabel, yearVal, isLatestMonth){
   const scores={};
 
