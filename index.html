@@ -457,6 +457,21 @@ function pf(){
   fillMonths('prM',prMonths);
   fillMonths('crM',crcMonths);
   fillMonths('sM',sumMonths);
+
+  // Seleccionar automáticamente el año y mes más reciente en QI Summary
+  const sYSel=document.getElementById('sY');
+  const sMSel=document.getElementById('sM');
+  if(sYSel&&sYSel.options.length>0) sYSel.selectedIndex=0;
+  if(sMSel&&sumMonths.length>0){
+    const mo_s=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const latestYear=spYears[0];
+    const latestRows=D.sp.filter(r=>String(Math.round(r['Year']))===latestYear);
+    const latestMonth=latestRows.sort((a,b)=>mo_s.indexOf(b['Month'])-mo_s.indexOf(a['Month']))[0]?.['Month'];
+    if(latestMonth){
+      const idx=[...sMSel.options].findIndex(o=>o.value===latestMonth);
+      if(idx>=0) sMSel.selectedIndex=idx;
+    }
+  }
 }
 // ===== QI SUMMARY =====
 function rSum(){
