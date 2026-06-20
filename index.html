@@ -292,9 +292,14 @@ function xDate(v){
   if(v===null||v===undefined||v==='') return null;
   if(v instanceof Date) return v;
   if(typeof v==='string'){
-    // gviz a veces devuelve fechas como "Date(2026,4,31)"
     const m=v.match(/^Date\((\d+),(\d+),(\d+)\)/);
     if(m) return new Date(+m[1], +m[2], +m[3]);
+    // Formato d/m/yyyy (Veeva TAT)
+    const dm=v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if(dm) return new Date(+dm[3], +dm[2]-1, +dm[1]);
+    // Formato m/d/yyyy
+    const md=v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if(md) return new Date(+md[3], +md[1]-1, +md[2]);
     const d=new Date(v);
     return isNaN(d)?null:d;
   }
