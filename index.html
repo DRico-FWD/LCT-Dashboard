@@ -1028,6 +1028,7 @@ function rVV(){
   document.getElementById('vvKPIs').innerHTML=[
     kc('Overall Avg TAT',avgTAT!==null?avgTAT.toFixed(2):'—',5,' days',true),
     kc('Tasks tracked',computed.length,null),
+    kc('Documents',[...new Set(computed.map(r=>r['Document Name']).filter(Boolean))].length,null),
     kc('Staff members',[...new Set(computed.map(r=>r['Task Owner']))].length,null)
   ].join('');
 
