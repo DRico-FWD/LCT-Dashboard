@@ -295,6 +295,16 @@ function xDate(v){
   if(typeof v==='string'){
     const m=v.match(/^Date\((\d+),(\d+),(\d+)\)/);
     if(m) return new Date(+m[1], +m[2], +m[3]);
+    // Formato d-Mon-yy o d-Mon-yyyy (ej: 30-Jun-26, 5-Jun-2026)
+    const months={'Jan':0,'Feb':1,'Mar':2,'Apr':3,'May':4,'Jun':5,'Jul':6,'Aug':7,'Sep':8,'Oct':9,'Nov':10,'Dec':11};
+    const dm2=v.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{2,4})$/);
+    if(dm2){
+      const mon=months[dm2[2].charAt(0).toUpperCase()+dm2[2].slice(1).toLowerCase()];
+      if(mon!==undefined){
+        const y=+dm2[3]<100?2000+(+dm2[3]):(+dm2[3]);
+        return new Date(y, mon, +dm2[1]);
+      }
+    }
     // Formato d/m/yyyy o d/m/yy (Veeva TAT)
     const dm=v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
     if(dm){
