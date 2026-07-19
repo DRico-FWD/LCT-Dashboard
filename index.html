@@ -157,6 +157,8 @@ select{border:1px solid var(--bd);border-radius:6px;padding:5px 10px;font-size:1
     <select id="aMV" onchange="rAI()"><option value="all">All months</option></select>
     <span class="fl" style="margin-left:12px">Resolution Month:</span>
     <select id="aM" onchange="rAI()"><option value="all">All months</option></select>
+    <span class="fl" style="margin-left:12px">Closure Month:</span>
+    <select id="aClo" onchange="rAI()"><option value="all">All months</option></select>
   </div>
   <div id="aKPIs" class="kg"></div>
   <div class="two">
@@ -453,6 +455,7 @@ function pf(){
   fillMonths('mM',mvMonths);
   fillMonths('aM',mo_short);
   fillMonths('aMV',mo_short,'All MV months');
+  fillMonths('aClo',mo_short,'All closure months');
   fillMonths('pdM',pdMonths);
   fillMonths('prM',prMonths);
   fillMonths('crM',crcMonths);
@@ -687,16 +690,21 @@ function rAI(){
     const mvD = xDate(r['MV end date']);
     const mvMonth = mvD ? mo_short[mvD.getMonth()] : null;
     const mvYear = mvD ? String(mvD.getFullYear()) : null;
-    return Object.assign({}, r, {_days:comp.daysElapsed, _month:comp.month, _year:comp.year, _closed:comp.closed, _mvMonth:mvMonth, _mvYear:mvYear});
+    // Closure month: desde FOR QC
+    const cloD = xDate(r['FOR QC']);
+    const cloMonth = cloD ? mo_short[cloD.getMonth()] : null;
+    return Object.assign({}, r, {_days:comp.daysElapsed, _month:comp.month, _year:comp.year, _closed:comp.closed, _mvMonth:mvMonth, _mvYear:mvYear, _cloMonth:cloMonth});
   });
   const yr=document.getElementById('aY').value;
   const mo=document.getElementById('aM').value; // Resolution month
   const mvMo=document.getElementById('aMV').value; // MV month
+  const cloMo=document.getElementById('aClo').value; // Closure month
   const crc=document.getElementById('aC').value;
   const st=document.getElementById('aSt').value;
   if(yr!=='all')rows=rows.filter(r=>String(r._year)===yr||r._mvYear===yr);
   if(mo!=='all')rows=rows.filter(r=>r._month===mo);
   if(mvMo!=='all')rows=rows.filter(r=>r._mvMonth===mvMo);
+  if(cloMo!=='all')rows=rows.filter(r=>r._cloMonth===cloMo);
   if(crc!=='all')rows=rows.filter(r=>r['CRC']===crc);
   if(st!=='all')rows=rows.filter(r=>(r._closed?'Y':'N')===st);
 
