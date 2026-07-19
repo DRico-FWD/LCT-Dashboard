@@ -711,7 +711,11 @@ function rAI(){
   const cloMo=document.getElementById('aClo').value; // Closure month
   const crc=document.getElementById('aC').value;
   const st=document.getElementById('aSt').value;
-  if(yr!=='all')rows=rows.filter(r=>String(r._year)===yr||r._mvYear===yr);
+  if(yr!=='all')rows=rows.filter(r=>{
+    const cloD=xDate(r['FOR QC']);
+    const cloYear=cloD?String(cloD.getFullYear()):null;
+    return String(r._year)===yr||r._mvYear===yr||cloYear===yr;
+  });
   if(mo!=='all')rows=rows.filter(r=>r._month===mo);
   if(mvMo!=='all')rows=rows.filter(r=>r._mvMonth===mvMo);
   if(cloMo!=='all')rows=rows.filter(r=>r._cloMonth===cloMo);
