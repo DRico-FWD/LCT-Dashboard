@@ -52,6 +52,15 @@ select{border:1px solid var(--bd);border-radius:6px;padding:5px 10px;font-size:1
 .bg2{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
 .bgg{background:#E1F5EE;color:#0F6E56}.bgr{background:#FCEBEB;color:#A32D2D}
 @media(max-width:800px){.two{grid-template-columns:1fr}nav{width:180px}}
+/* Multi-select dropdown */
+.msd{position:relative;display:inline-block}
+.msd-btn{background:#fff;border:1px solid #d1d5db;border-radius:6px;padding:6px 28px 6px 10px;font-size:13px;cursor:pointer;min-width:120px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#374151}
+.msd-btn::after{content:"▾";position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#6b7280}
+.msd-list{display:none;position:absolute;top:100%;left:0;z-index:999;background:#fff;border:1px solid #d1d5db;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.12);min-width:180px;max-height:220px;overflow-y:auto;padding:4px 0}
+.msd-list.open{display:block}
+.msd-item{display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;font-size:13px;color:#374151}
+.msd-item:hover{background:#f3f4f6}
+.msd-item input[type=checkbox]{accent-color:#1B3A6B;width:14px;height:14px;cursor:pointer}
 </style>
 </head>
 <body translate="no">
@@ -150,7 +159,10 @@ select{border:1px solid var(--bd);border-radius:6px;padding:5px 10px;font-size:1
   <div class="pt">Action Items</div><div class="ps">Open/closed status, resolution times, and activity by trial</div>
   <div class="fb"><span class="fl">Filter:</span>
     <select id="aY" onchange="rAI()"><option value="all">All years</option></select>
-    <select id="aC" onchange="rAI()"><option value="all">All CRCs</option></select>
+    <div class="msd" id="aCrcMsd">
+      <button class="msd-btn" onclick="toggleMsd('aCrcMsd')">All CRCs</button>
+      <div class="msd-list" id="aCrcList"></div>
+    </div>
     <select id="aSt" onchange="rAI()"><option value="all">All</option><option value="Y">Closed</option><option value="N">Open</option></select>
   </div>
   <div class="fb"><span class="fl">MV Month:</span>
@@ -380,6 +392,50 @@ async function load(){
   }
 }
 
+// ===== MULTI-SELECT DROPDOWN =====
+function toggleMsd(id){
+  const list=document.getElementById(id).querySelector('.msd-list');
+  list.classList.toggle('open');
+}
+document.addEventListener('click',function(e){
+  document.querySelectorAll('.msd-list.open').forEach(l=>{
+    if(!l.closest('.msd').contains(e.target)) l.classList.remove('open');
+  });
+});
+function buildMsd(listId,btnId,items,onChangeFn){
+  const list=document.getElementById(listId);
+  if(!list)return;
+  list.innerHTML='<label class="msd-item"><input type="checkbox" value="all" checked onchange="msdAll(\''+listId+'\',\''+btnId+'\','+onChangeFn+')"> All</label>'+
+    items.map(v=>'<label class="msd-item"><input type="checkbox" value="'+v+'" onchange="msdChk(\''+listId+'\',\''+btnId+'\','+onChangeFn+')"> '+v+'</label>').join('');
+}
+function msdAll(listId,btnId,fn){
+  const list=document.getElementById(listId);
+  const allChk=list.querySelector('[value="all"]');
+  list.querySelectorAll('input:not([value="all"])').forEach(c=>c.checked=allChk.checked);
+  msdUpdateBtn(listId,btnId);fn();
+}
+function msdChk(listId,btnId,fn){
+  const list=document.getElementById(listId);
+  const boxes=list.querySelectorAll('input:not([value="all"])');
+  const allChk=list.querySelector('[value="all"]');
+  allChk.checked=[...boxes].every(c=>c.checked);
+  msdUpdateBtn(listId,btnId);fn();
+}
+function msdUpdateBtn(listId,btnId){
+  const list=document.getElementById(listId);
+  const btn=document.getElementById(btnId)||list.closest('.msd').querySelector('.msd-btn');
+  const selected=[...list.querySelectorAll('input:not([value="all"]):checked')].map(c=>c.value);
+  const allChk=list.querySelector('[value="all"]');
+  btn.textContent=allChk.checked||selected.length===0?'All CRCs':selected.length===1?selected[0]:selected.length+' CRCs selected';
+}
+function getMsdValues(listId){
+  const list=document.getElementById(listId);
+  if(!list)return null;
+  const allChk=list.querySelector('[value="all"]');
+  if(allChk&&allChk.checked)return null; // null = todos
+  return [...list.querySelectorAll('input:not([value="all"]):checked')].map(c=>c.value);
+}
+
 function pf(){
   const mo_ord=['January','February','March','April','May','June','July','August','September','October','November','December'];
   const mo_short=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -420,7 +476,8 @@ function pf(){
     s.innerHTML='<option value="all">'+label+'</option>'+months.map(m=>'<option value="'+m+'">'+m+'</option>').join('');
   }
 
-  fill('vC',crcs);fill('cC',crcs);fill('qC',crcs);fill('aC',crcs);
+  fill('vC',crcs);fill('cC',crcs);fill('qC',crcs);
+  buildMsd('aCrcList',null,crcs,'rAI');
   fill('vA',areas);fill('rArea',rAreas);
   fill('mS',sts,'all','All studies');
   fill('pdC',pdCrcs);fill('rCRC',rCrcs);fill('prC',rCrcs);
@@ -709,7 +766,7 @@ function rAI(){
   const mo=document.getElementById('aM').value; // Resolution month
   const mvMo=document.getElementById('aMV').value; // MV month
   const cloMo=document.getElementById('aClo').value; // Closure month
-  const crc=document.getElementById('aC').value;
+  const crc=getMsdValues('aCrcList');
   const st=document.getElementById('aSt').value;
   if(yr!=='all')rows=rows.filter(r=>{
     const cloD=xDate(r['FOR QC']);
@@ -719,7 +776,7 @@ function rAI(){
   if(mo!=='all')rows=rows.filter(r=>r._month===mo);
   if(mvMo!=='all')rows=rows.filter(r=>r._mvMonth===mvMo);
   if(cloMo!=='all')rows=rows.filter(r=>r._cloMonth===cloMo);
-  if(crc!=='all')rows=rows.filter(r=>r['CRC']===crc);
+  if(crc&&crc.length>0)rows=rows.filter(r=>crc.includes(r['CRC']));
   if(st!=='all')rows=rows.filter(r=>(r._closed?'Y':'N')===st);
 
   const tot=rows.length,open=rows.filter(r=>!r._closed).length,closed=rows.filter(r=>r._closed).length;
